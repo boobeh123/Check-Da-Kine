@@ -3,6 +3,7 @@
 
 const ArrestLog = require('../../model/ArrestLog');
 const ArrestRecord = require('../../model/ArrestRecord');
+const { withShares, toTopRows } = require('../chartRows');
 const { ethnicityGroups, toEthnicityGroup } = require('./ethnicityGroups');
 const {
   toHawaiiDay,
@@ -24,15 +25,6 @@ const ageBands = [
 ];
 
 const shownEthnicities = 10; // The rest fold into one "All others" bar
-
-// Adds each row's share of the largest count (0–100), which sets its bar length
-const withShares = (rows) => {
-  const largest = Math.max(0, ...rows.map((row) => row.count));
-  return rows.map((row) => ({
-    ...row,
-    share: largest > 0 ? Number(((row.count / largest) * 100).toFixed(1)) : 0,
-  }));
-};
 
 const percentOf = (count, total) => (total > 0 ? Math.round((count / total) * 100) : 0);
 
@@ -68,22 +60,6 @@ const toAgeBands = (ageCounts) =>
         .reduce((sum, row) => sum + row.count, 0),
     }))
   );
-
-// ethnicityCounts: [{ _id: ethnicity, count }], largest first, with the tail folded together
-const toEthnicityRows = (ethnicityCounts) => {
-  const sorted = ethnicityCounts
-    .map((row) => ({ label: row._id, count: row.count }))
-    .sort((first, second) => second.count - first.count || first.label.localeCompare(second.label));
-
-  if (sorted.length <= shownEthnicities + 1) return withShares(sorted);
-
-  const rest = sorted.slice(shownEthnicities);
-  const restCount = rest.reduce((sum, row) => sum + row.count, 0);
-  return withShares([
-    ...sorted.slice(0, shownEthnicities),
-    { label: `All others (${rest.length})`, count: restCount },
-  ]);
-};
 
 // OCR leaves stray characters where a long name was cut off ("HOOPILIKEAN!"), so drop
 // trailing non-letters to let those variants count as one officer
@@ -165,7 +141,7 @@ const getArrestStats = async (from, until) => {
       flagged: facets.flagged[0]?.count ?? 0,
     },
     ageBands: toAgeBands(facets.byAge),
-    ethnicities: toEthnicityRows(facets.byEthnicity),
+    ethnicities: toTopRows(facets.byEthnicity, shownEthnicities),
     officerGroups,
     officerCount: officerGroups.reduce((sum, group) => sum + group.count, 0),
   };
