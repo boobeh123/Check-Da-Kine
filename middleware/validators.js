@@ -18,3 +18,18 @@ exports.validateDateRange = [
     .custom((end, { req }) => typeof req.query.start !== 'string' || !req.query.start || end >= req.query.start)
     .withMessage('The end date must be on or after the start date.'),
 ];
+
+const brokenLinkMessage = 'That link to more arrests is broken.';
+
+// The Arrests feed's "load more" link carries the last card's time and id; both or neither
+exports.validateArrestCursor = [
+  query('beforeTime')
+    .optional({ values: 'falsy' })
+    .isString()
+    .isISO8601({ strict: true, strictSeparator: true })
+    .withMessage(brokenLinkMessage),
+  query('beforeId').optional({ values: 'falsy' }).isString().isMongoId().withMessage(brokenLinkMessage),
+  query('beforeId')
+    .custom((beforeId, { req }) => !beforeId === !req.query.beforeTime)
+    .withMessage(brokenLinkMessage),
+];
