@@ -3,7 +3,7 @@ const { validationResult } = require('express-validator');
 
 exports.getLogin = async (req, res) => {
   if (req.user) return res.redirect('/arrests');
-  res.render('loginView', { title: 'Log in' });
+  res.render('loginView', { title: 'Log in', description: 'Log in to Check Da Kine. Accounts are by invitation only.' });
 };
 
 // Passport reads the (already validated and sanitized) email and password from req.body
