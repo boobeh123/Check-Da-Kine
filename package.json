@@ -8,6 +8,7 @@
     "dev": "node --watch server.js",
     "parse": "node jobs/parseLocalPdf.js",
     "scrape": "node jobs/scrapeArrestLogs.js",
+    "reparse": "node jobs/reparseArrestLogs.js",
     "create-user": "node jobs/createUser.js"
   },
   "license": "UNLICENSED",
