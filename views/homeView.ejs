@@ -112,6 +112,10 @@
         </section>
       <% } %>
 
+      <% if (news) { %>
+        <%- include('partials/newsSection', { news }) %>
+      <% } %>
+
       <section class="aboutData">
         <h2>About this data</h2>
         <p>HPD publishes a new arrest log as a PDF about every six hours. We read each one, pull out every arrest, and keep a single de-duplicated record of each, so the numbers can be checked against the Attorney General's <a href="https://ag.hawaii.gov/cpja/rs/cih/">annual crime reports</a>.</p>
