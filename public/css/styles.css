@@ -86,6 +86,12 @@ Base
   --bandArtHeight: clamp(9rem, 16vw, 13rem); /* The skyline along the band's bottom */
   --accentBarWidth: 2.5rem;
   --accentBarHeight: 4px;
+
+  /* Motion: chart bars growing in, and arrest cards fading up as they scroll into view */
+  --easeOut: cubic-bezier(0.22, 1, 0.36, 1);
+  --growDuration: 700ms;
+  --revealDuration: 400ms;
+  --revealRise: 1rem;
 }
 
 *,
@@ -368,7 +374,8 @@ Components
 }
 
 /* Horizontal bars grow from a hairline baseline, with the value at the tip.
-   dashboardCharts.js sets --barShare (0–100) from each bar's data-share. */
+   dashboardCharts.js sets --barShare (0–100) from each bar's data-share when the chart
+   scrolls into view, and the bars grow to it (see --growDuration). */
 .barList {
   display: grid;
   gap: var(--spaceSm);
@@ -404,6 +411,7 @@ Components
   height: var(--barThickness);
   background-color: var(--colorChartBar);
   border-radius: 0 var(--radiusBar) var(--radiusBar) 0;
+  transition: width var(--growDuration) var(--easeOut);
 }
 
 .barValue,
@@ -435,6 +443,7 @@ Components
   height: calc((100% - 1.75rem) * var(--barShare, 0) / 100);
   background-color: var(--colorChartBar);
   border-radius: var(--radiusBar) var(--radiusBar) 0 0;
+  transition: height var(--growDuration) var(--easeOut);
 }
 
 .barFill:hover,
@@ -830,6 +839,19 @@ Arrests
   gap: var(--spaceMd);
 }
 
+/* arrestFeed.js hides cards below the fold until they scroll into view, then fades them up.
+   Without JavaScript, no card is ever hidden. */
+.arrestCard {
+  transition:
+    opacity var(--revealDuration) var(--easeOut),
+    transform var(--revealDuration) var(--easeOut);
+}
+
+.arrestCard.beforeReveal {
+  opacity: 0;
+  transform: translateY(var(--revealRise));
+}
+
 .arrestHeader > * {
   margin-bottom: var(--spaceSm);
 }
@@ -1124,6 +1146,15 @@ Media queries
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    transition-delay: 0s !important; /* Chart bars would otherwise pop in one at a time */
     scroll-behavior: auto !important;
+  }
+}
+
+/* A printout shows every card, including ones never scrolled to */
+@media print {
+  .arrestCard.beforeReveal {
+    opacity: 1;
+    transform: none;
   }
 }
