@@ -4,13 +4,13 @@
   <h3 align="center">Check Da Kine</h3>
 
   <p align="center">
-    The original HPD Stats project was created in Python by <a href="https://www.github.com/tyliec">Tyliec</a>.<br />
+    The original HPD Stats project was created in Python by <a href="https://www.github.com/tyliec">Tyliec</a><br />
 
     Check Da Kine is my take on HPD Stats using JavaScript & it's ecosystem to mimic python's functionality to track the statistics of the arrests from the <a href="https://www.honolulupd.org/">Honolulu Police Department</a>
 </p>
 
 ## About The Project
-The Honolulu Police Department offers the public to download of PDFs containing data logged during an arrest. 
+The Honolulu Police Department offers the public to download PDFs containing data logged during an arrest. 
 <br />
 This project's goal is display the data with a modern interface & user experience
 <br />
