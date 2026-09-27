@@ -198,6 +198,29 @@ Components
   margin-bottom: 0;
 }
 
+.flashMessage {
+  margin-bottom: var(--spaceMd);
+  padding: var(--spaceSm) var(--spaceMd);
+  background-color: var(--colorSurface);
+  border: var(--borderWidth) solid var(--colorBorder);
+  border-left: var(--focusWidth) solid var(--colorPrimary);
+  border-radius: var(--radiusMd);
+}
+
+/* A label stacked above its input */
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spaceXs);
+}
+
+.formField input {
+  padding: var(--spaceSm);
+  font: inherit;
+  border: var(--borderWidth) solid var(--colorInputBorder);
+  border-radius: var(--radiusMd);
+}
+
 /* Stat tiles: a label, a big number, and a note */
 .statRow {
   display: grid;
@@ -458,6 +481,7 @@ Nav
   display: flex;
   flex-wrap: wrap;
   gap: var(--spaceMd);
+  align-items: center;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -478,6 +502,33 @@ Nav
 .navLink[aria-current='page'] {
   font-weight: 600;
   border-bottom-color: var(--colorOnPrimary);
+}
+
+.navAccount {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spaceSm);
+  align-items: center;
+}
+
+.navUser {
+  font-size: var(--fontSizeSm);
+  overflow-wrap: anywhere;
+}
+
+/* The log out button looks like the nav links beside it */
+.navButton {
+  padding: var(--spaceXs) 0;
+  font: inherit;
+  color: var(--colorOnPrimary);
+  cursor: pointer;
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+}
+
+.navButton:hover {
+  border-bottom-color: currentColor;
 }
 
 /**************************************************************
@@ -683,6 +734,23 @@ Arrests
 
 .feedEnd {
   font-weight: 600;
+}
+
+/**************************************************************
+Login
+***************************************************************/
+.loginCard {
+  max-width: 28rem;
+  margin-inline: auto;
+}
+
+.loginForm {
+  display: grid;
+  gap: var(--spaceMd);
+}
+
+.loginForm .button {
+  justify-self: start;
 }
 
 /**************************************************************
