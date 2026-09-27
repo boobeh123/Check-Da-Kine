@@ -1,0 +1,16 @@
+<%# Vertical columns in a fixed order. rows: [{ label, count, share }] %>
+<div class="columnChart" aria-hidden="true">
+  <div class="columnPlot">
+    <% rows.forEach((row) => { %>
+      <div class="columnItem">
+        <span class="columnValue"><%= row.count.toLocaleString('en-US') %></span>
+        <span class="columnBar" data-share="<%= row.share %>"></span>
+      </div>
+    <% }) %>
+  </div>
+  <div class="columnAxis">
+    <% rows.forEach((row) => { %>
+      <span class="columnLabel"><%= row.label %></span>
+    <% }) %>
+  </div>
+</div>
