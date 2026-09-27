@@ -1,29 +1,14 @@
 // Finds the arrest logs HPD currently lists, and downloads them.
 
 const cheerio = require('cheerio');
+const { fetchFromHpd } = require('../hpdRequest');
 
 const listingUrl = 'https://www.honolulupd.org/information/arrest-logs/';
 const hpdHostname = 'www.honolulupd.org';
-const requestTimeoutMs = 60 * 1000;
-
-// HPD's site rejects requests that don't look like they come from a browser
-const requestHeaders = {
-  'User-Agent':
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36',
-};
 
 // Logs are named for when HPD published them, in Hawaii time:
 // 2026-09-26-05-00-32_Arrest_Log.pdf -> year, month, day, hour, minute, second
 const fileNamePattern = /^(\d{4})-(\d{2})-(\d{2})-(\d{2})-(\d{2})-(\d{2})_Arrest_Log\.pdf$/;
-
-const fetchFromHpd = async (url) => {
-  const response = await fetch(url, {
-    headers: requestHeaders,
-    signal: AbortSignal.timeout(requestTimeoutMs),
-  });
-  if (!response.ok) throw new Error(`HPD returned ${response.status} for ${url}`);
-  return response;
-};
 
 // Turns a link from the listing page into { fileName, sourceUrl, publishedAt }, or null
 // if it isn't an arrest log on HPD's own site
