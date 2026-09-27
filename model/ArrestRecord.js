@@ -20,7 +20,7 @@ const arrestRecordSchema = new mongoose.Schema(
   {
     dedupeKey: { type: String, required: true, unique: true },
     arrestedAt: { type: Date, required: true, index: true },
-    name: { type: String, select: false }, // Left out of queries unless asked for; never sent to browsers
+    name: { type: String, select: false }, // Left out of queries unless asked for; shown only to logged-in users
     ethnicities: [String],
     sex: { type: String, enum: ['M', 'F'] },
     age: { type: Number, min: 18, max: 122 },
@@ -33,5 +33,8 @@ const arrestRecordSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// The Arrests feed lists newest first and pages by (arrestedAt, _id)
+arrestRecordSchema.index({ arrestedAt: -1, _id: -1 });
 
 module.exports = mongoose.model('ArrestRecord', arrestRecordSchema);
