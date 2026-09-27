@@ -82,7 +82,8 @@ Base
   --gapSurface: 2px;
 
   --shadowCard: 0 1px 2px rgba(15, 23, 42, 0.06), 0 4px 16px rgba(15, 23, 42, 0.08);
-  --heroOverlap: 3rem; /* How far the stat tiles rise into the hero band */
+  --bandOverlap: 3rem; /* How far the first block below the page band rises into it */
+  --bandArtHeight: clamp(9rem, 16vw, 13rem); /* The skyline along the band's bottom */
   --accentBarWidth: 2.5rem;
   --accentBarHeight: 4px;
 }
@@ -214,7 +215,7 @@ Components
   background-color: var(--colorPrimaryDark);
 }
 
-/* A white button for use on the blue hero band */
+/* A white button for use on the blue page band */
 .buttonInverse {
   color: var(--colorPrimary);
   background-color: var(--colorOnPrimary);
@@ -285,14 +286,14 @@ Components
 .flashMessage {
   margin-bottom: var(--spaceMd);
   padding: var(--spaceSm) var(--spaceMd);
-  color: var(--colorText); /* It can sit on the blue hero, which sets white text */
+  color: var(--colorText); /* It can sit on the blue band, which sets white text */
   background-color: var(--colorSurface);
   border: var(--borderWidth) solid var(--colorBorder);
   border-left: var(--focusWidth) solid var(--colorPrimary);
   border-radius: var(--radiusMd);
 }
 
-/* Data that should have been refreshed by now. It can sit on the blue hero, too. */
+/* Data that should have been refreshed by now. It can sit on the blue band, too. */
 .staleNotice {
   margin-bottom: var(--spaceMd);
   padding: var(--spaceSm) var(--spaceMd);
@@ -629,47 +630,64 @@ Nav
 }
 
 /**************************************************************
-Home
+Page band
 ***************************************************************/
-.pageMain {
-  padding-block: var(--spaceLg);
-}
-
-/* The hero band starts right under the header, so the home page's main has no top padding */
-.homeMain {
+/* The band starts right under the header, so main has no top padding */
+.bandMain {
   padding-bottom: var(--spaceLg);
 }
 
-.homeHero {
+/* The blue band at the top of every page, with the skyline along its bottom */
+.pageBand {
   color: var(--colorOnPrimary);
-  background: linear-gradient(160deg, var(--colorPrimary), var(--colorPrimaryDark));
+  background:
+    url('/img/bandSkyline.svg') right bottom / auto var(--bandArtHeight) no-repeat,
+    linear-gradient(160deg, var(--colorPrimary), var(--colorPrimaryDark));
 }
 
 /* The dark focus ring would disappear on the blue band */
-.homeHero :focus-visible {
+.pageBand :focus-visible {
   outline-color: var(--colorOnPrimary);
 }
 
-/* Extra room at the bottom for the stat tiles that rise into the band */
-.heroInner {
-  padding-block: var(--spaceLg) calc(var(--heroOverlap) + var(--spaceLg));
+/* Extra room at the bottom for the first block below, which rises into the band */
+.bandInner {
+  padding-block: var(--spaceLg) calc(var(--bandOverlap) + var(--spaceLg));
 }
 
-.heroLead {
+.bandInner > :last-child {
+  margin-bottom: 0;
+}
+
+.bandLead {
   max-width: 40rem;
   font-size: var(--fontSizeLg);
   color: var(--colorOnPrimaryMuted);
 }
 
-.heroUpdated {
+.bandLead a {
+  color: var(--colorOnPrimary);
+}
+
+.bandLead a:hover {
+  color: var(--colorOnPrimaryHover);
+}
+
+.bandNote {
   font-size: var(--fontSizeSm);
   color: var(--colorOnPrimaryMuted);
+}
+
+/* The first block below the band (stat tiles, a card, or a message) rises into it */
+.bandContent > :first-child {
+  position: relative;
+  margin-top: calc(-1 * var(--bandOverlap));
 }
 
 /**************************************************************
 Date filter
 ***************************************************************/
-/* The filter sits on the blue hero band, so its colors are the white-on-blue versions */
+/* The filter sits on the blue page band, so its colors are the white-on-blue versions */
 .dateFilter {
   display: flex;
   flex-wrap: wrap;
@@ -727,12 +745,6 @@ Date filter
 /**************************************************************
 Dashboard
 ***************************************************************/
-/* The first block (the stat tiles, or the empty-range message) rises into the hero band */
-.homeContent > :first-child {
-  position: relative;
-  margin-top: calc(-1 * var(--heroOverlap));
-}
-
 .summarySection,
 .chartCard {
   margin-bottom: var(--spaceLg);
@@ -775,17 +787,8 @@ Dashboard
 /**************************************************************
 Arrests
 ***************************************************************/
-.arrestsIntro {
-  margin-bottom: var(--spaceLg);
-}
-
-.arrestsNote {
-  font-size: var(--fontSizeSm);
-  color: var(--colorTextMuted);
-}
-
 .arrestSearch {
-  margin-bottom: var(--spaceMd);
+  margin-bottom: var(--spaceLg);
 }
 
 .arrestSearch label {
@@ -942,14 +945,8 @@ Arrests
 /**************************************************************
 Dispatches
 ***************************************************************/
-.dispatchIntro,
 .dispatchActive {
   margin-bottom: var(--spaceLg);
-}
-
-.dispatchUpdated {
-  font-size: var(--fontSizeSm);
-  color: var(--colorTextMuted);
 }
 
 /* Leaflet needs the map box to have a height */
@@ -1023,6 +1020,15 @@ Dispatches
 /**************************************************************
 Login
 ***************************************************************/
+/* The heading sits centered above the centered card */
+.loginIntro {
+  text-align: center;
+}
+
+.loginIntro .bandLead {
+  margin-inline: auto;
+}
+
 .loginCard {
   max-width: 28rem;
   margin-inline: auto;
