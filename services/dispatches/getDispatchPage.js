@@ -3,12 +3,16 @@
 
 const Dispatch = require('../../model/Dispatch');
 const { toTopRows } = require('../chartRows');
+const { findStaleness } = require('../staleness');
 const { findPlaced, placeKey } = require('./geocodePlaces');
 const { formatDateTime, formatShortDateTime } = require('../dashboard/hawaiiDays');
 
 const historyDays = 7;
 const shownTypes = 10; // The rest fold into one "All others" bar
 const msPerDay = 24 * 60 * 60 * 1000;
+
+// HPD's list normally changes every 15 minutes or so
+const staleAfterHours = 1;
 
 const toCallRow = (call) => ({
   receivedAt: formatShortDateTime(call.receivedAt),
@@ -20,7 +24,7 @@ const toCallRow = (call) => ({
 
 const getDispatchPage = async () => {
   const latest = await Dispatch.findOne().sort({ lastSeenAt: -1 }).select('lastSeenAt').lean();
-  if (!latest) return { lastUpdated: null };
+  if (!latest) return { lastUpdated: null, stale: null };
 
   const since = new Date(Date.now() - historyDays * msPerDay);
   const [activeCalls, [facets]] = await Promise.all([
@@ -52,6 +56,7 @@ const getDispatchPage = async () => {
 
   return {
     lastUpdated: formatDateTime(latest.lastSeenAt),
+    stale: findStaleness(latest.lastSeenAt, staleAfterHours),
     activeCalls: activeCalls.map(toCallRow),
     mapPoints,
     unplacedCount: activeCalls.length - mapPoints.length,
