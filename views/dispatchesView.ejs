@@ -21,6 +21,16 @@
     <% } else { %>
       <section class="card dispatchActive">
         <h2>Active now (<%= activeCalls.length %>)</h2>
+        <% if (mapPoints.length > 0) { %>
+          <%# dispatchMap.js draws one dot per call from data-calls; the list below has every call too %>
+          <div class="callMap" data-calls="<%= JSON.stringify(mapPoints) %>" role="region" aria-label="Map of active calls"></div>
+          <p class="mapNote">
+            Dots are approximate: HPD masks house numbers, so each call is placed at its block, or on its street when the block couldn't be found.
+            <% if (unplacedCount > 0) { %>
+              <%= unplacedCount %> <%= unplacedCount === 1 ? "call couldn't" : "calls couldn't" %> be placed on the map.
+            <% } %>
+          </p>
+        <% } %>
         <% if (activeCalls.length === 0) { %>
           <p>HPD's latest update listed no open calls.</p>
         <% } else { %>
