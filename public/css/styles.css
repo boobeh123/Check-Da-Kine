@@ -166,11 +166,14 @@ Components
   margin-bottom: 0;
 }
 
+/* Works on <button> and on links styled as buttons */
 .button {
+  display: inline-block;
   padding: var(--spaceSm) var(--spaceMd);
   font: inherit;
   font-weight: 600;
   color: var(--colorOnPrimary);
+  text-decoration: none;
   background-color: var(--colorPrimary);
   border: 0;
   border-radius: var(--radiusMd);
@@ -178,6 +181,7 @@ Components
 }
 
 .button:hover {
+  color: var(--colorOnPrimary);
   background-color: var(--colorPrimaryDark);
 }
 
@@ -568,6 +572,120 @@ Dashboard
 }
 
 /**************************************************************
+Arrests
+***************************************************************/
+.arrestsIntro {
+  margin-bottom: var(--spaceLg);
+}
+
+.arrestsNote {
+  font-size: var(--fontSizeSm);
+  color: var(--colorTextMuted);
+}
+
+.arrestFeed {
+  display: grid;
+  gap: var(--spaceMd);
+}
+
+.arrestHeader > * {
+  margin-bottom: var(--spaceXs);
+}
+
+.arrestTime {
+  font-size: var(--fontSizeLg);
+}
+
+.arrestName {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.arrestNameMissing {
+  font-weight: 400;
+  font-style: italic;
+  color: var(--colorTextMuted);
+}
+
+.arrestDetails {
+  color: var(--colorTextMuted);
+}
+
+.offenseList {
+  display: grid;
+  gap: var(--spaceMd);
+  margin: var(--spaceMd) 0;
+  padding: 0;
+  list-style: none;
+}
+
+.offenseItem {
+  padding-top: var(--spaceMd);
+  border-top: var(--borderWidth) solid var(--colorBorder);
+}
+
+.offenseTitle {
+  margin-bottom: var(--spaceSm);
+  font-size: var(--fontSizeBase);
+}
+
+.offenseDetails {
+  display: grid;
+  gap: var(--spaceSm);
+  margin: 0;
+  font-size: var(--fontSizeSm);
+}
+
+/* Label above value on phones; side by side on wider screens (see Media queries) */
+.offenseField {
+  display: grid;
+}
+
+.offenseField dt {
+  color: var(--colorTextMuted);
+}
+
+.offenseField dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.arrestFooter {
+  font-size: var(--fontSizeSm);
+  color: var(--colorTextMuted);
+}
+
+.arrestFooter p {
+  margin-bottom: var(--spaceXs);
+}
+
+.ocrNote {
+  display: block;
+}
+
+.arrestWarnings {
+  margin-top: var(--spaceSm);
+}
+
+.arrestWarnings summary {
+  cursor: pointer;
+}
+
+.arrestWarnings ul {
+  margin: var(--spaceXs) 0 0;
+}
+
+.feedStatus {
+  margin: var(--spaceLg) 0 var(--spaceMd);
+  font-size: var(--fontSizeSm);
+  color: var(--colorTextMuted);
+}
+
+.feedEnd {
+  font-weight: 600;
+}
+
+/**************************************************************
 Footer
 ***************************************************************/
 .siteFooter {
@@ -601,6 +719,11 @@ Media queries
 
   .card {
     padding: var(--spaceLg);
+  }
+
+  .offenseField {
+    grid-template-columns: 9rem 1fr;
+    gap: var(--spaceSm);
   }
 }
 
