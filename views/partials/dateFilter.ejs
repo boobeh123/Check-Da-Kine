@@ -1,0 +1,32 @@
+<% if (errors.length > 0) { %>
+  <div class="formErrors" role="alert">
+    <p>That date range didn't work, so all dates are shown instead:</p>
+    <ul>
+      <% errors.forEach((error) => { %>
+        <li><%= error %></li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>
+
+<form class="dateFilter" method="get" action="/" aria-label="Date range">
+  <ul class="presetList">
+    <% presets.forEach((preset) => { %>
+      <li>
+        <a class="presetLink" href="<%= preset.href %>"<% if (preset.selected) { %> aria-current="true"<% } %>><%= preset.label %></a>
+      </li>
+    <% }) %>
+  </ul>
+
+  <div class="dateField">
+    <label for="startDate">From</label>
+    <input type="date" id="startDate" name="start" value="<%= range.start %>" max="<%= today %>">
+  </div>
+
+  <div class="dateField">
+    <label for="endDate">To</label>
+    <input type="date" id="endDate" name="end" value="<%= range.end %>" max="<%= today %>">
+  </div>
+
+  <button class="button" type="submit">Apply</button>
+</form>
