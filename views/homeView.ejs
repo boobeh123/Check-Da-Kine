@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head') %>
+<body>
+  <%- include('partials/header') %>
+
+  <main id="mainContent" class="pageMain pageWidth">
+    <section class="homeIntro">
+      <h1>Honolulu Police Department arrest statistics</h1>
+      <p class="homeLead">Check Da Kine turns the Honolulu Police Department's published arrest logs into statistics anyone can explore.</p>
+      <p>HPD publishes a new arrest log as a PDF about every six hours. We read each one, pull out every arrest, and keep a single de-duplicated record of each, so the numbers can be checked against the Attorney General's <a href="https://ag.hawaii.gov/cpja/rs/cih/">annual crime reports</a>.</p>
+    </section>
+
+    <section class="card">
+      <h2>Coming soon</h2>
+      <ul class="homeComingList">
+        <li>A dashboard of arrests by age, sex, and ethnicity</li>
+        <li>A searchable table of arrests</li>
+        <li>An archive of every arrest log</li>
+        <li>Active police dispatch calls</li>
+      </ul>
+    </section>
+  </main>
+
+  <%- include('partials/footer') %>
+</body>
+</html>
