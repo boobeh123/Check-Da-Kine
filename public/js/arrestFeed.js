@@ -1,5 +1,6 @@
 // Turns the Arrests page's "Load more arrests" link into infinite scroll. The link works on
 // its own (it opens the next page), so the feed still works if this script doesn't run.
+// Cards below the fold fade up as they scroll into view.
 
 /**************************************************************
 DOM selectors
@@ -41,6 +42,24 @@ const fetchNextPage = async (url) => {
 /**************************************************************
 Main logic
 ***************************************************************/
+// A hidden card is shown (styles.css fades it up) once it's a little way onto the screen
+const revealObserver = new IntersectionObserver(
+  (entries) => {
+    entries
+      .filter((entry) => entry.isIntersecting)
+      .forEach((entry) => {
+        entry.target.classList.remove('beforeReveal');
+        revealObserver.unobserve(entry.target);
+      });
+  },
+  { rootMargin: '0px 0px -40px 0px' }
+);
+
+const hideUntilSeen = (card) => {
+  card.classList.add('beforeReveal');
+  revealObserver.observe(card);
+};
+
 const linkObserver = new IntersectionObserver(
   (entries) => {
     if (entries.some((entry) => entry.isIntersecting)) loadMore({ moveFocus: false });
@@ -67,6 +86,7 @@ const loadMore = async ({ moveFocus }) => {
     const nextStatus = nextPage.querySelector('.feedStatus');
 
     arrestFeed.append(...newCards);
+    newCards.forEach(hideUntilSeen); // Before the next paint, so they never flash in first
     if (nextStatus) showCount(nextStatus.dataset.end);
 
     // Keyboard and screen reader users who pressed the link land on the first new arrest
@@ -99,6 +119,13 @@ const handleLoadMoreClick = (event) => {
 /**************************************************************
 Event listeners
 ***************************************************************/
+// Cards already on screen when the page opens are left alone
+if (arrestFeed) {
+  [...arrestFeed.children]
+    .filter((card) => card.getBoundingClientRect().top > window.innerHeight)
+    .forEach(hideUntilSeen);
+}
+
 if (arrestFeed && loadMoreLink) {
   loadMoreLink.addEventListener('click', handleLoadMoreClick);
   linkObserver.observe(loadMoreLink);
