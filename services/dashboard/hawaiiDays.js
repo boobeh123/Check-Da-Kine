@@ -24,6 +24,12 @@ const countDays = (startDay, endDay) => Math.round((Date.parse(endDay) - Date.pa
 const formatDay = (day) =>
   startOfHawaiiDay(day).toLocaleDateString('en-US', { timeZone, month: 'short', day: 'numeric', year: 'numeric' });
 
+// "Sep 26", for labels where the year is already clear
+const formatShortDay = (day) => startOfHawaiiDay(day).toLocaleDateString('en-US', { timeZone, month: 'short', day: 'numeric' });
+
+// "Sep 2026"
+const formatMonth = (day) => startOfHawaiiDay(day).toLocaleDateString('en-US', { timeZone, month: 'short', year: 'numeric' });
+
 // "Sep 26, 2026, 5:00 PM HST"
 const formatDateTime = (date) =>
   `${date.toLocaleString('en-US', { timeZone, dateStyle: 'medium', timeStyle: 'short' })} HST`;
@@ -39,6 +45,8 @@ module.exports = {
   addDays,
   countDays,
   formatDay,
+  formatShortDay,
+  formatMonth,
   formatDateTime,
   formatShortDateTime,
 };
