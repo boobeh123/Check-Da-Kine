@@ -12,7 +12,8 @@ const errorMessageLength = 2000; // ArrestLog.errorMessage's maxLength
 
 const countOffenses = (records) => records.reduce((total, record) => total + record.offenses.length, 0);
 
-const saveRecords = async (parsedRecords, log) => {
+// Model is ArrestRecord, or the temporary copy that `npm run reparse` builds
+const saveRecords = async (parsedRecords, log, Model) => {
   const outcomes = { created: 0, updated: 0, kept: 0, skipped: 0 };
   const warnings = [];
 
@@ -23,7 +24,7 @@ const saveRecords = async (parsedRecords, log) => {
       outcomes.skipped += 1;
       warnings.push(`record ${index + 1} skipped: ${result.skipReason}`);
     } else {
-      outcomes[await saveRecord(result, log)] += 1;
+      outcomes[await saveRecord(result, log, Model)] += 1;
     }
   }
 
@@ -95,4 +96,4 @@ const importArrestLogs = async ({ limit, upload }) => {
   return totals;
 };
 
-module.exports = { importArrestLogs };
+module.exports = { importArrestLogs, saveRecords, countOffenses };
