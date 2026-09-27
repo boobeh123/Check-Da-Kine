@@ -33,8 +33,15 @@ app.use(
   helmet({
     contentSecurityPolicy: {
       directives: {
-        // Cloudinary images, and OpenStreetMap's map tiles for the Dispatches map
-        imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com', 'https://tile.openstreetmap.org'],
+        // Cloudinary images, OpenStreetMap's map tiles for the Dispatches map, and the
+        // photos on HPD's news releases
+        imgSrc: [
+          "'self'",
+          'data:',
+          'https://res.cloudinary.com',
+          'https://tile.openstreetmap.org',
+          'https://www.honolulupd.org',
+        ],
         upgradeInsecureRequests: isProduction ? [] : null, // Local dev runs on plain HTTP
       },
     },
