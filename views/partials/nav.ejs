@@ -12,5 +12,19 @@
         <a class="navLink" href="<%= link.href %>"<% if (locals.currentPath === link.href) { %> aria-current="page"<% } %>><%= link.label %></a>
       </li>
     <% }) %>
+
+    <% if (locals.user) { %>
+      <li class="navAccount">
+        <span class="navUser"><%= user.email %></span>
+        <%# Logging out changes state, so it's a POST form rather than a link %>
+        <form class="logoutForm" method="post" action="/logout">
+          <button class="navButton" type="submit">Log out</button>
+        </form>
+      </li>
+    <% } else { %>
+      <li>
+        <a class="navLink" href="/login"<% if (locals.currentPath === '/login') { %> aria-current="page"<% } %>>Log in</a>
+      </li>
+    <% } %>
   </ul>
 </nav>
