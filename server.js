@@ -33,7 +33,8 @@ app.use(
   helmet({
     contentSecurityPolicy: {
       directives: {
-        imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com'], // Allow Cloudinary images
+        // Cloudinary images, and OpenStreetMap's map tiles for the Dispatches map
+        imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com', 'https://tile.openstreetmap.org'],
         upgradeInsecureRequests: isProduction ? [] : null, // Local dev runs on plain HTTP
       },
     },
@@ -47,8 +48,10 @@ app.use(morgan(isProduction ? 'combined' : 'dev'));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-// 5. Static files: before sessions, so asset requests don't touch the session store
+// 5. Static files: before sessions, so asset requests don't touch the session store.
+// Leaflet (the Dispatches map) is served from our own site, so no outside script is loaded.
 app.use(express.static('public'));
+app.use('/vendor/leaflet', express.static('node_modules/leaflet/dist'));
 
 // 6. Sessions, stored in MongoDB. Guests don't get one until something is saved to it.
 app.use(
