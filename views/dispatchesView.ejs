@@ -37,6 +37,8 @@
               <% if (unplacedCount > 0) { %>
                 <%= unplacedCount %> <%= unplacedCount === 1 ? "call couldn't" : "calls couldn't" %> be placed on the map.
               <% } %>
+              <%# Shown by dispatchMap.js once the rows can be chosen %>
+              <span id="callListHint" hidden>Choose a call in the list to show it on the map.</span>
             </p>
           <% } %>
           <% if (activeCalls.length === 0) { %>
@@ -45,10 +47,13 @@
             <ol class="callList">
               <% activeCalls.forEach((call) => { %>
                 <li class="callItem">
-                  <time class="callTime" datetime="<%= call.receivedIso %>"><%= call.receivedAt %></time>
-                  <span class="callType"><%= call.type %></span>
-                  <span class="callPlace"><%= call.place %></span>
-                  <span class="callDistrict"><%= call.district %></span>
+                  <%# dispatchMap.js turns this into a button when the call has a dot on the map %>
+                  <div class="callRow" data-call-id="<%= call.id %>">
+                    <time class="callTime" datetime="<%= call.receivedIso %>"><%= call.receivedAt %></time>
+                    <span class="callType"><%= call.type %></span>
+                    <span class="callPlace"><%= call.place %></span>
+                    <span class="callDistrict"><%= call.district %></span>
+                  </div>
                 </li>
               <% }) %>
             </ol>
