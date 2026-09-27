@@ -25,6 +25,33 @@ The Attorney General's Office provides [annual reports](https://ag.hawaii.gov/cp
 ## How It Works
 Using a combination of image cropping and OCR, we extract data about each arrest from every arrest log HPD publishes (four a day). A second scraper records HPD's active dispatch calls every 10 minutes and places them on a map, and a third picks up HPD's latest news releases and posts on X every hour.
 
+### Features
+* Full-stack web application deployed with Railway
+* Accessible to screen readers
+* Responsive to mobile viewports
+* Data visualization & Rendering data dynamically with MongoDB
+* Authentication & User accounts with Passport.js localStrategy
+* Web scrapers with cron schedules
+* X API 
+* OpenStreetMap & Leaflet APIs
+* OCR of HPD's PDF arrest logs in JavaScript with pdf.js, sharp & Tesseract.js
+* De-duplicated arrests across overlapping logs, with every PDF archived to Cloudinary
+* Arrest cards with infinite scroll that still works without JavaScript
+* Arrest search by charge, statute, location, or report number (MongoDB text index)
+* Arrestee & officer names shown only to logged-in users
+* Date range filter with Last 7 days, Last 30 days & All time presets
+* Arrests-over-time chart with hover tooltips, grouped by day, week, or month
+* Active dispatch calls geocoded onto a map, linked to the call list
+* HPD news releases from its WordPress API
+* Out-of-date notices when HPD's data stops updating
+* Security headers (Helmet CSP), a rate-limited login & validated input
+* Animations that respect reduced-motion settings
+* Share previews (Open Graph) & a custom favicon
+* Unit tests with Node's built-in test runner, including an OCR regression check
+
+### Technologies
+<img src="https://img.shields.io/badge/html5%20-%23E34F26.svg?&style=for-the-badge&logo=html5&logoColor=white" alt="HTML" height="50"/><img src="https://img.shields.io/badge/css3%20-%231572B6.svg?&style=for-the-badge&logo=css3&logoColor=white" alt="CSS" height="50"/><img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript" height="50"/><img src="https://img.shields.io/badge/node.js%20-3F873F.svg?&style=for-the-badge&logo=node.js&logoColor=white" alt="Node" height="50"/><img src="https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express" height="50"/><img src="https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" height="50"/><img src="https://img.shields.io/badge/Mongoose.js-8A0403?style=for-the-badge&logoColor=white" alt="Mongoose" />
+
 ### Full Breakdown
 
 This follows the approach Tyliec designed for HPD Stats, rebuilt in JavaScript.
