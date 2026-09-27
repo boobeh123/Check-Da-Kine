@@ -889,7 +889,8 @@ Dashboard
 /**************************************************************
 News
 ***************************************************************/
-.newsSection {
+.newsSection,
+.xSection {
   margin-bottom: var(--spaceLg);
 }
 
@@ -1022,6 +1023,94 @@ News
   aspect-ratio: 4 / 3;
   object-fit: cover;
   border-radius: var(--radiusMd);
+}
+
+/* HPD's X posts: one column on phones, two on wider screens (see Media queries) */
+.xPostList {
+  display: grid;
+  gap: var(--spaceMd);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card.xPost {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spaceSm);
+  padding: var(--spaceMd);
+}
+
+/* X's display requirements: the avatar to the left of the name and @handle */
+.xPostHeader {
+  display: flex;
+  gap: var(--spaceSm);
+  align-items: center;
+}
+
+.xAvatar {
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+}
+
+.xAuthor {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--spaceXs);
+  min-width: 0;
+  margin: 0;
+  font-size: var(--fontSizeSm);
+  line-height: var(--lineHeightHeading);
+}
+
+.xName {
+  font-weight: 600;
+}
+
+.xHandle {
+  color: var(--colorTextMuted);
+}
+
+.xTime {
+  flex: none;
+  margin-left: auto;
+  font-size: var(--fontSizeSm);
+  color: var(--colorTextMuted);
+}
+
+/* The post's own line breaks are kept; long links wrap instead of widening the card */
+.xText {
+  margin: 0;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.xMedia {
+  position: relative;
+  display: block;
+  margin-top: auto;
+}
+
+.xMedia img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radiusMd);
+}
+
+.xMediaBadge {
+  position: absolute;
+  right: var(--spaceSm);
+  bottom: var(--spaceSm);
+  padding: 0 var(--spaceSm);
+  font-size: var(--fontSizeXs);
+  font-weight: 600;
+  color: var(--colorOnPrimary);
+  background-color: var(--colorText);
+  border-radius: var(--radiusPill);
 }
 
 /**************************************************************
@@ -1365,6 +1454,10 @@ Media queries
 
   .newsBody {
     padding: var(--spaceLg);
+  }
+
+  .xPostList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .offenseField {
