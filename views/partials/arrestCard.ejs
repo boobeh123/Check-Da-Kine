@@ -1,17 +1,34 @@
 <%# One arrest. tabindex="-1" lets arrestFeed.js move focus here after loading more. %>
 <article class="card arrestCard" tabindex="-1">
   <header class="arrestHeader">
-    <h2 class="arrestTime"><%= card.arrestedAt %></h2>
+    <div class="arrestHeading">
+      <h2 class="arrestTime"><%= card.arrestedAt %></h2>
+      <% if (card.warnings.length > 0) { %>
+        <span class="badge badgeFlagged">Flagged for review</span>
+      <% } %>
+    </div>
     <p class="arrestName<% if (!card.nameShown) { %> arrestNameMissing<% } %>"><%= card.name %></p>
-    <% if (card.details) { %>
-      <p class="arrestDetails"><%= card.details %></p>
+    <% if (card.chips.length > 0) { %>
+      <ul class="chipList">
+        <% card.chips.forEach((chip) => { %>
+          <li class="chip"><%= chip %></li>
+        <% }) %>
+      </ul>
     <% } %>
   </header>
 
   <ol class="offenseList">
     <% card.offenses.forEach((offense) => { %>
       <li class="offenseItem">
-        <h3 class="offenseTitle"><%= offense.title %></h3>
+        <div class="offenseHeading">
+          <h3 class="offenseTitle"><%= offense.name %></h3>
+          <% if (offense.statute) { %>
+            <span class="badge badgeStatute"><%= offense.statute %></span>
+          <% } %>
+          <% if (offense.released) { %>
+            <span class="badge badgeReleased">Released</span>
+          <% } %>
+        </div>
         <dl class="offenseDetails">
           <% offense.fields.forEach(([label, value]) => { %>
             <div class="offenseField">
