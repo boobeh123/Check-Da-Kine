@@ -5,4 +5,7 @@
   <title><%= title %> | Check Da Kine</title>
   <link rel="stylesheet" href="/css/normalize.css">
   <link rel="stylesheet" href="/css/styles.css">
+  <% (locals.scripts ?? []).forEach((src) => { %>
+    <script src="<%= src %>" defer></script>
+  <% }) %>
 </head>
