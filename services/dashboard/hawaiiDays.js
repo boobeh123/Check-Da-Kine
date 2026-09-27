@@ -28,6 +28,10 @@ const formatDay = (day) =>
 const formatDateTime = (date) =>
   `${date.toLocaleString('en-US', { timeZone, dateStyle: 'medium', timeStyle: 'short' })} HST`;
 
+// "Sep 26, 9:07 PM", for lists where the year and time zone would be noise
+const formatShortDateTime = (date) =>
+  date.toLocaleString('en-US', { timeZone, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+
 module.exports = {
   toHawaiiDay,
   todayInHawaii,
@@ -36,4 +40,5 @@ module.exports = {
   countDays,
   formatDay,
   formatDateTime,
+  formatShortDateTime,
 };
