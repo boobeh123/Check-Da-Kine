@@ -1,0 +1,27 @@
+<%# The Arrests tile's small chart over time. trend: { unit, bars: [{ label, count, share, partial }] }.
+    dashboardCharts.js grows the bars; the hidden table gives screen readers every value. %>
+<% const soFar = (bar) => (bar.partial ? ' (so far)' : ''); %>
+<div class="trendBars" aria-hidden="true">
+  <% trend.bars.forEach((bar) => { %>
+    <span class="trendSlot" data-tip="<%= bar.label %><%= soFar(bar) %>: <%= bar.count.toLocaleString('en-US') %>">
+      <span class="trendBar<%= bar.partial ? ' trendBarPartial' : '' %>" data-share="<%= bar.share %>"></span>
+    </span>
+  <% }) %>
+</div>
+<table class="visuallyHidden">
+  <caption>Arrests by <%= trend.unit %></caption>
+  <thead>
+    <tr>
+      <th scope="col"><%= trend.unit[0].toUpperCase() + trend.unit.slice(1) %></th>
+      <th scope="col">Arrests</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% trend.bars.forEach((bar) => { %>
+      <tr>
+        <td><%= bar.label %><%= soFar(bar) %></td>
+        <td><%= bar.count.toLocaleString('en-US') %></td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
