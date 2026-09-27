@@ -15,6 +15,23 @@ Base
   --colorError: #b91c1c;
   --colorErrorSurface: #fef2f2;
 
+  /* Hero band text and outlines, checked for contrast against the brand blue */
+  --colorOnPrimaryMuted: #d7e5f2;
+  --colorOnPrimaryBorder: #9fc3e3;
+  --colorOnPrimaryHover: #e6f0f9;
+
+  /* Decorative only (heading bars), never text */
+  --colorAccent: #f59e0b;
+
+  /* Chips and badges; each text color clears 4.5:1 on its surface */
+  --colorChipSurface: #f1f5f9;
+  --colorStatuteText: #0b4775;
+  --colorStatuteSurface: #e6f0f9;
+  --colorReleasedText: #115e59;
+  --colorReleasedSurface: #ccfbf1;
+  --colorFlaggedText: #92400e;
+  --colorFlaggedSurface: #fef3c7;
+
   /* Charts. Single-series bars use the brand blue. The officer groups use a categorical
      palette checked for colorblind separation; each group keeps its color in every range. */
   --colorChartBar: var(--colorPrimary);
@@ -29,6 +46,7 @@ Base
   --colorSeriesOther: #898781;
 
   --fontBody: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --fontSizeXs: 0.8125rem;
   --fontSizeSm: 0.875rem;
   --fontSizeBase: 1rem;
   --fontSizeLg: 1.25rem;
@@ -45,7 +63,9 @@ Base
   --spaceLg: 2rem;
 
   --contentWidth: 60rem;
+  --radiusSm: 0.25rem;
   --radiusMd: 0.5rem;
+  --radiusLg: 0.75rem;
   --radiusPill: 999px;
   --radiusBar: 4px;
   --radiusUnit: 2px;
@@ -57,6 +77,11 @@ Base
   --columnPlotHeight: 12rem;
   --unitSize: 0.75rem;
   --gapSurface: 2px;
+
+  --shadowCard: 0 1px 2px rgba(15, 23, 42, 0.06), 0 4px 16px rgba(15, 23, 42, 0.08);
+  --heroOverlap: 3rem; /* How far the stat tiles rise into the hero band */
+  --accentBarWidth: 2.5rem;
+  --accentBarHeight: 4px;
 }
 
 *,
@@ -159,7 +184,8 @@ Components
   padding: var(--spaceMd);
   background-color: var(--colorSurface);
   border: var(--borderWidth) solid var(--colorBorder);
-  border-radius: var(--radiusMd);
+  border-radius: var(--radiusLg);
+  box-shadow: var(--shadowCard);
 }
 
 .card > :last-child {
@@ -185,6 +211,61 @@ Components
   background-color: var(--colorPrimaryDark);
 }
 
+/* A white button for use on the blue hero band */
+.buttonInverse {
+  color: var(--colorPrimary);
+  background-color: var(--colorOnPrimary);
+}
+
+.buttonInverse:hover {
+  color: var(--colorPrimaryDark);
+  background-color: var(--colorOnPrimaryHover);
+}
+
+/* Chips: small rounded labels for facts about a person (age, sex, ethnicity) */
+.chipList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spaceXs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  padding: 0.125rem var(--spaceSm);
+  font-size: var(--fontSizeSm);
+  background-color: var(--colorChipSurface);
+  border: var(--borderWidth) solid var(--colorBorder);
+  border-radius: var(--radiusPill);
+}
+
+/* Badges: short, bold labels. The text always says what the color means. */
+.badge {
+  display: inline-block;
+  padding: 0.125rem var(--spaceSm);
+  font-size: var(--fontSizeXs);
+  font-weight: 600;
+  line-height: var(--lineHeightBody);
+  white-space: nowrap;
+  border-radius: var(--radiusSm);
+}
+
+.badgeStatute {
+  color: var(--colorStatuteText);
+  background-color: var(--colorStatuteSurface);
+}
+
+.badgeReleased {
+  color: var(--colorReleasedText);
+  background-color: var(--colorReleasedSurface);
+}
+
+.badgeFlagged {
+  color: var(--colorFlaggedText);
+  background-color: var(--colorFlaggedSurface);
+}
+
 .formErrors {
   margin-bottom: var(--spaceMd);
   padding: var(--spaceMd);
@@ -201,6 +282,7 @@ Components
 .flashMessage {
   margin-bottom: var(--spaceMd);
   padding: var(--spaceSm) var(--spaceMd);
+  color: var(--colorText); /* It can sit on the blue hero, which sets white text */
   background-color: var(--colorSurface);
   border: var(--borderWidth) solid var(--colorBorder);
   border-left: var(--focusWidth) solid var(--colorPrimary);
@@ -233,7 +315,8 @@ Components
   padding: var(--spaceMd);
   background-color: var(--colorSurface);
   border: var(--borderWidth) solid var(--colorBorder);
-  border-radius: var(--radiusMd);
+  border-radius: var(--radiusLg);
+  box-shadow: var(--shadowCard);
 }
 
 .statLabel {
@@ -538,29 +621,46 @@ Home
   padding-block: var(--spaceLg);
 }
 
-.homeIntro {
-  margin-bottom: var(--spaceLg);
+/* The hero band starts right under the header, so the home page's main has no top padding */
+.homeMain {
+  padding-bottom: var(--spaceLg);
 }
 
-.homeLead {
+.homeHero {
+  color: var(--colorOnPrimary);
+  background: linear-gradient(160deg, var(--colorPrimary), var(--colorPrimaryDark));
+}
+
+/* The dark focus ring would disappear on the blue band */
+.homeHero :focus-visible {
+  outline-color: var(--colorOnPrimary);
+}
+
+/* Extra room at the bottom for the stat tiles that rise into the band */
+.heroInner {
+  padding-block: var(--spaceLg) calc(var(--heroOverlap) + var(--spaceLg));
+}
+
+.heroLead {
+  max-width: 40rem;
   font-size: var(--fontSizeLg);
-  color: var(--colorTextMuted);
+  color: var(--colorOnPrimaryMuted);
 }
 
-.homeUpdated {
+.heroUpdated {
   font-size: var(--fontSizeSm);
-  color: var(--colorTextMuted);
+  color: var(--colorOnPrimaryMuted);
 }
 
 /**************************************************************
 Date filter
 ***************************************************************/
+/* The filter sits on the blue hero band, so its colors are the white-on-blue versions */
 .dateFilter {
   display: flex;
   flex-wrap: wrap;
   gap: var(--spaceMd);
   align-items: flex-end;
-  margin-bottom: var(--spaceLg);
 }
 
 .presetList {
@@ -575,17 +675,23 @@ Date filter
 .presetLink {
   display: inline-block;
   padding: var(--spaceXs) var(--spaceMd);
+  color: var(--colorOnPrimary);
   text-decoration: none;
-  background-color: var(--colorSurface);
-  border: var(--borderWidth) solid var(--colorInputBorder);
+  background-color: transparent;
+  border: var(--borderWidth) solid var(--colorOnPrimaryBorder);
   border-radius: var(--radiusPill);
+}
+
+.presetLink:hover {
+  color: var(--colorOnPrimary);
+  border-color: var(--colorOnPrimary);
 }
 
 .presetLink[aria-current='true'] {
   font-weight: 600;
-  color: var(--colorOnPrimary);
-  background-color: var(--colorPrimary);
-  border-color: var(--colorPrimary);
+  color: var(--colorPrimary);
+  background-color: var(--colorOnPrimary);
+  border-color: var(--colorOnPrimary);
 }
 
 .dateField {
@@ -598,16 +704,46 @@ Date filter
 .dateField input {
   padding: var(--spaceXs) var(--spaceSm);
   font: inherit;
-  border: var(--borderWidth) solid var(--colorInputBorder);
+  color: var(--colorText);
+  background-color: var(--colorSurface);
+  border: var(--borderWidth) solid var(--colorOnPrimaryBorder);
   border-radius: var(--radiusMd);
 }
 
 /**************************************************************
 Dashboard
 ***************************************************************/
+/* The first block (the stat tiles, or the empty-range message) rises into the hero band */
+.homeContent > :first-child {
+  position: relative;
+  margin-top: calc(-1 * var(--heroOverlap));
+}
+
 .summarySection,
 .chartCard {
   margin-bottom: var(--spaceLg);
+}
+
+/* A short accent bar under each section heading */
+.chartCard > h2::after,
+.aboutData > h2::after {
+  content: '';
+  display: block;
+  width: var(--accentBarWidth);
+  height: var(--accentBarHeight);
+  margin-top: var(--spaceSm);
+  background-color: var(--colorAccent);
+  border-radius: var(--radiusPill);
+}
+
+.aboutData {
+  max-width: 45rem;
+  color: var(--colorTextMuted);
+}
+
+.aboutData > h2 {
+  font-size: var(--fontSizeLg);
+  color: var(--colorText);
 }
 
 .dataNote {
@@ -640,10 +776,24 @@ Arrests
 }
 
 .arrestHeader > * {
-  margin-bottom: var(--spaceXs);
+  margin-bottom: var(--spaceSm);
+}
+
+/* The time, with a "Flagged for review" badge beside it when there is one */
+.arrestHeading,
+.offenseHeading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spaceSm);
+  align-items: center;
+}
+
+.arrestHeading {
+  justify-content: space-between;
 }
 
 .arrestTime {
+  margin: 0;
   font-size: var(--fontSizeLg);
 }
 
@@ -655,10 +805,6 @@ Arrests
 .arrestNameMissing {
   font-weight: 400;
   font-style: italic;
-  color: var(--colorTextMuted);
-}
-
-.arrestDetails {
   color: var(--colorTextMuted);
 }
 
@@ -675,8 +821,13 @@ Arrests
   border-top: var(--borderWidth) solid var(--colorBorder);
 }
 
-.offenseTitle {
+/* The charge name, followed by its statute badge and a "Released" badge */
+.offenseHeading {
   margin-bottom: var(--spaceSm);
+}
+
+.offenseTitle {
+  margin: 0;
   font-size: var(--fontSizeBase);
 }
 
