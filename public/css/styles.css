@@ -888,6 +888,61 @@ Arrests
 }
 
 /**************************************************************
+Dispatches
+***************************************************************/
+.dispatchIntro,
+.dispatchActive {
+  margin-bottom: var(--spaceLg);
+}
+
+.dispatchUpdated {
+  font-size: var(--fontSizeSm);
+  color: var(--colorTextMuted);
+}
+
+.callList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Stacked on phones; four columns on wider screens (see Media queries) */
+.callItem {
+  display: grid;
+  gap: 0 var(--spaceMd);
+  padding-block: var(--spaceSm);
+  font-size: var(--fontSizeSm);
+  border-top: var(--borderWidth) solid var(--colorBorder);
+}
+
+.callItem:first-child {
+  border-top: 0;
+}
+
+.callTime,
+.callDistrict {
+  color: var(--colorTextMuted);
+}
+
+.callTime {
+  font-variant-numeric: tabular-nums;
+}
+
+.callType {
+  font-weight: 600;
+}
+
+.callPlace {
+  overflow-wrap: anywhere;
+}
+
+/* A call type or district name is longer than a number, so it's set smaller */
+.statValueText {
+  font-size: var(--fontSizeLg);
+  overflow-wrap: anywhere;
+}
+
+/**************************************************************
 Login
 ***************************************************************/
 .loginCard {
@@ -943,6 +998,11 @@ Media queries
   .offenseField {
     grid-template-columns: 9rem 1fr;
     gap: var(--spaceSm);
+  }
+
+  .callItem {
+    grid-template-columns: 8rem minmax(8rem, 13rem) 1fr 5.5rem;
+    align-items: baseline;
   }
 }
 
