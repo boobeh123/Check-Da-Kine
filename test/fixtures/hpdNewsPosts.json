@@ -1,0 +1,65 @@
+[
+  {
+    "id": 68600,
+    "date_gmt": "2026-09-27T13:12:47",
+    "link": "https://www.honolulupd.org/three-juveniles-arrested-following-shots-fired-in-waikiki/",
+    "title": {
+      "rendered": "Three Juveniles Arrested Following Shots Fired in Waikīkī "
+    },
+    "excerpt": {
+      "rendered": "<p>On September 26, 2026, at approximately 11:45 p.m., officers responded to the Waikīkī &nbsp;area after witnesses reported hearing gunshots. Responding officers found evidence of a shooting, including damage to nearby [&hellip;]</p>\n"
+    },
+    "featured_media": 0
+  },
+  {
+    "id": 68579,
+    "date_gmt": "2026-09-23T19:01:09",
+    "link": "https://www.honolulupd.org/hpd-shuts-down-four-illegal-gambling-rooms-on-hausten-street/",
+    "title": {
+      "rendered": "HPD Shuts Down Four Illegal Gambling Rooms on Hausten Street"
+    },
+    "excerpt": {
+      "rendered": "<p>On September 21, 2026, around 6:30 p.m., HPD executed four simultaneous search warrants on Hausten Street. HPD’s Narcotics/Vice Division Gambling Detail, with assistance from the District 7 Crime Reduction Unit, [&hellip;]</p>\n"
+    },
+    "featured_media": 68580,
+    "_embedded": {
+      "wp:featuredmedia": [
+        {
+          "alt_text": "",
+          "source_url": "https://www.honolulupd.org/wp-content/uploads/2026/09/HPD-Photo_2.jpg",
+          "media_details": {
+            "sizes": {
+              "medium_large": {
+                "source_url": "https://www.honolulupd.org/wp-content/uploads/2026/09/HPD-Photo_2-768x576.jpg"
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": 68527,
+    "date_gmt": "2026-09-18T03:09:22",
+    "link": "https://www.honolulupd.org/suspect-arrested-for-kahaluu-attempted-murder/",
+    "title": {
+      "rendered": "Suspect Arrested for Kahalu&#8217;u Attempted Murder"
+    },
+    "excerpt": {
+      "rendered": "<p>Honolulu Police Department District 4 patrol officers initiated an Attempted Murder in the Second Degree case following an incident in the area of a church in Kahalu‘u. On September 17, [&hellip;]</p>\n"
+    },
+    "featured_media": 0
+  },
+  {
+    "id": 68522,
+    "date_gmt": "2026-09-17T22:37:21",
+    "link": "https://www.honolulupd.org/hpd-joins-30x30-initiative-to-support-women-in-law-enforcement/",
+    "title": {
+      "rendered": "HPD Joins 30&#215;30 Initiative to Support Women in Law Enforcement"
+    },
+    "excerpt": {
+      "rendered": "<p>HONOLULU — On Sept. 14, 2026, the Honolulu Police Department (HPD) signed the 30&#215;30 Pledge, becoming the first county police department in Hawaiʻi to join the nationwide initiative focused on [&hellip;]</p>\n"
+    },
+    "featured_media": 0
+  }
+]
