@@ -21,8 +21,9 @@ exports.validateDateRange = [
 
 const brokenLinkMessage = 'That link to more arrests is broken.';
 
-// The Arrests feed's "load more" link carries the last card's time and id; both or neither
-exports.validateArrestCursor = [
+// The Arrests page: an optional search, and the "load more" link's position in the feed,
+// which carries the last card's time and id (both or neither)
+exports.validateArrestsPage = [
   query('beforeTime')
     .optional({ values: 'falsy' })
     .isString()
@@ -32,6 +33,13 @@ exports.validateArrestCursor = [
   query('beforeId')
     .custom((beforeId, { req }) => !beforeId === !req.query.beforeTime)
     .withMessage(brokenLinkMessage),
+  // The Arrests search box; the words are cleaned further before any query (searchWords.js)
+  query('q')
+    .optional({ values: 'falsy' })
+    .isString()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('Keep the search to 100 characters or fewer.'),
 ];
 
 // Passport reads req.body itself, so the sanitizers here update the email it sees.
