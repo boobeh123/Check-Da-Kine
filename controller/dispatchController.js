@@ -6,7 +6,9 @@ exports.getDispatches = async (req, res) => {
 
   res.render('dispatchesView', {
     title: 'Dispatches',
-    scripts: ['/js/dashboardCharts.js'], // Sizes the bar charts
+    styles: ['/vendor/leaflet/leaflet.css'],
+    // Deferred scripts run in this order, so Leaflet is ready before the map script
+    scripts: ['/js/dashboardCharts.js', '/vendor/leaflet/leaflet.js', '/js/dispatchMap.js'],
     sourceUrl: dispatchPageUrl,
     ...page,
   });
