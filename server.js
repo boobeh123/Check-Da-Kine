@@ -50,6 +50,7 @@ app.use((req, res, next) => {
 
 // 7. Routes
 app.use('/', require('./routes/indexRoutes'));
+app.use('/arrests', require('./routes/arrestRoutes'));
 
 // 8. 404: after all routes
 app.use((req, res) => {
