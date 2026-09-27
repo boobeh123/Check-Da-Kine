@@ -1,4 +1,4 @@
-const { query } = require('express-validator');
+const { body, query } = require('express-validator');
 
 const dayFormat = { format: 'YYYY-MM-DD', strictMode: true, delimiters: ['-'] };
 
@@ -32,4 +32,11 @@ exports.validateArrestCursor = [
   query('beforeId')
     .custom((beforeId, { req }) => !beforeId === !req.query.beforeTime)
     .withMessage(brokenLinkMessage),
+];
+
+// Passport reads req.body itself, so the sanitizers here update the email it sees.
+// bcrypt only reads the first 72 bytes, and the cap stops huge passwords tying up the server.
+exports.validateLogin = [
+  body('email').isString().trim().toLowerCase().isEmail().withMessage('Enter a valid email address.'),
+  body('password').isString().isLength({ min: 1, max: 200 }).withMessage('Enter your password.'),
 ];
