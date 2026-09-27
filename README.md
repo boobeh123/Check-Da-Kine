@@ -23,7 +23,7 @@ I wanted to see what JavaScript's ecosystem is capable of, since it's my stronge
 The Attorney General's Office provides [annual reports](https://ag.hawaii.gov/cpja/rs/cih/) as to the state of crime in Hawaii. This project provides a mechanism to validate these reports, track the numbers daily, and keep an archive of the raw data.
 
 ## How It Works
-Using a combination of image cropping and OCR, we extract data about each arrest from every arrest log HPD publishes (four a day). A second scraper records HPD's active dispatch calls every 10 minutes and places them on a map.
+Using a combination of image cropping and OCR, we extract data about each arrest from every arrest log HPD publishes (four a day). A second scraper records HPD's active dispatch calls every 10 minutes and places them on a map, and a third picks up HPD's latest news releases every hour.
 
 ### Full Breakdown
 
@@ -61,17 +61,24 @@ A second Railway cron service runs `npm run scrape-dispatches` every 10 minutes 
 2. Saves each call once. Every check that lists a call again moves its "last seen" time forward, so we know which calls are open now and roughly when the others closed ([saveDispatches.js](services/dispatches/saveDispatches.js))
 3. Places new addresses on the map with OpenStreetMap's free **Nominatim** geocoder, one lookup per second, remembering each result so no address is looked up twice. HPD masks house numbers (`51XX LIKINI ST` is the 5100 block) and drops the hyphen from Oahu's zone-lot numbers (`911200` is `91-1200`), so both are rebuilt first; when a block can't be found, the call is placed on its street ([geocodePlaces.js](services/dispatches/geocodePlaces.js))
 
+#### HPD news
+
+A third Railway cron service runs `npm run scrape-news` every hour ([jobs/scrapeNews.js](jobs/scrapeNews.js)):
+
+1. Reads HPD's 10 latest news releases from its website's WordPress API, with each release's photo when it has one, and turns the titles and excerpts into plain text ([fetchNewsReleases.js](services/news/fetchNewsReleases.js))
+2. Keeps the stored releases the same as HPD's latest: new ones are added, and ones HPD no longer lists (older, or taken down) are removed ([saveNewsReleases.js](services/news/saveNewsReleases.js))
+
 #### The website
 
 **Express** and **EJS** serve the site:
 
-- **Home:** statistics and charts for a chosen date range, counted by MongoDB
+- **Home:** statistics and charts for a chosen date range, counted by MongoDB, and HPD's latest news releases as cards linking to HPD's site
 - **Arrests:** every arrest as a card, newest first, loading more as you scroll. Arrestee and officer names are only shown to logged-in users; accounts are invite-only (**Passport**, created with `npm run create-user`)
 - **Dispatches:** a **Leaflet** map and list of the calls HPD is handling now, plus counts by call type and district for the last 7 days
 
 #### Running it
 
-The site and the two scrapers are three services on Railway, all deployed from this repository. The environment variables they need are listed in `.env.example`.
+The site and the three scrapers are four services on Railway, all deployed from this repository. The environment variables they need are listed in `.env.example`.
 
 | Command | What it does |
 |---|---|
@@ -79,6 +86,7 @@ The site and the two scrapers are three services on Railway, all deployed from t
 | `npm start` | Runs the website (Railway's web service) |
 | `npm run scrape` | Imports new arrest logs (Railway cron, 15 minutes after each HPD log) |
 | `npm run scrape-dispatches` | Checks HPD's dispatch calls (Railway cron, every 10 minutes) |
+| `npm run scrape-news` | Checks HPD's latest news releases (Railway cron, every hour) |
 | `npm run reparse` | Rebuilds every stored arrest with the current parser |
 | `npm run create-user -- --email you@example.com` | Creates an invite-only login and prints its password once (`--reset` for a new password) |
 | `npm run parse -- path/to/Arrest_Log.pdf` | Tries the parser on a downloaded PDF and saves the results as JSON next to it |
