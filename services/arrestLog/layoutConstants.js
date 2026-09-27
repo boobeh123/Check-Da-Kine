@@ -30,9 +30,26 @@ const recordFields = {
   // "/" after it. Tesseract misreads a lone letter ("F" came back as "="), but reads it
   // reliably with the slash beside it. parseArrestLog keeps only the letter.
   sex: { top: 25, bottom: 50, left: 145, right: recordWidth - 1409 },
-  age: { top: 25, bottom: 50, left: 177, right: recordWidth - 1380 },
   name: { top: 0, bottom: 25, left: 270, right: recordWidth - 850 },
 };
+
+// The age sits after the slash in "M / 44", and where it starts depends on the letter:
+// "F" is narrower than "M". A fixed box (the Python one started at x=177) cut off the
+// first digit of women's ages, turning 65 into 55. So the slash is found by scanning
+// this line, and the age box starts just after it. Measured across 784 records, the slash
+// ends at x=173 (M) or x=169 (F) and the age starts 6 pixels later.
+const sexAgeLine = { top: 25, bottom: 50, left: 140, right: 262 };
+const ageAfterSlash = 3; // Blank columns to skip after the slash
+const ageRight = 230; // Room for three digits (HPD prints 125 for some unidentified people)
+
+// Anything darker than this counts as ink when scanning for gaps
+const inkThreshold = 200;
+
+// Release info prints as "RBL / 500". Across 1,046 lines, the gaps beside the slash were
+// at least 5 pixels and gaps inside a word at most 4, so a 5-pixel gap separates words.
+const releaseInfoLine = { top: 25, bottom: 50, left: 1265, right: recordWidth };
+const wordGap = 5;
+const slashMaxWidth = 8; // The slash is 5 pixels wide; letters and numbers are wider
 
 // Field boxes relative to the top of an offense (a record can have several)
 const offenseFields = {
@@ -45,8 +62,8 @@ const offenseFields = {
   // The "Rel-Date/Time / How-Rel" column, which the Python scraper never read.
   // Overflow from the officer column ends by x=1258 and this column's text starts
   // at x=1273, so starting at 1265 takes in the column without the overflow.
+  // Release info, the line below, is read separately (see releaseInfoLine above)
   releaseDateTime: { top: 0, bottom: 25, left: 1265, right: recordWidth },
-  releaseInfo: { top: 25, bottom: 50, left: 1265, right: recordWidth },
 };
 
 module.exports = {
@@ -58,4 +75,11 @@ module.exports = {
   startPadding,
   recordFields,
   offenseFields,
+  sexAgeLine,
+  ageAfterSlash,
+  ageRight,
+  inkThreshold,
+  releaseInfoLine,
+  wordGap,
+  slashMaxWidth,
 };
