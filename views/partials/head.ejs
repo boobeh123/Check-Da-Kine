@@ -1,8 +1,41 @@
+<%
+  // The public address: links other sites and search engines keep point here, even from localhost
+  const siteUrl = 'https://checkdakine.up.railway.app';
+  const pageUrl = siteUrl + (locals.currentPath ?? '/'); // No query string, so filtered views share one address
+  const pageTitle = `${title} | Check Da Kine`;
+  const pageDescription = locals.description ?? "Arrest statistics and active police dispatch calls from the Honolulu Police Department's published data.";
+%>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Statistics from the Honolulu Police Department's published arrest logs.">
-  <title><%= title %> | Check Da Kine</title>
+  <title><%= pageTitle %></title>
+  <meta name="description" content="<%= pageDescription %>">
+  <meta name="author" content="Bobby Asakawa">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="<%= pageUrl %>">
+
+  <%# Colors the phone's browser bar to match the header %>
+  <meta name="theme-color" content="#0f5e9c">
+
+  <%# Favicon: /favicon.ico is found without a tag; the SVG stays sharp at any size %>
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+
+  <%# The preview card when a link is shared (iMessage, Facebook, Slack, X) %>
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Check Da Kine">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:url" content="<%= pageUrl %>">
+  <meta property="og:title" content="<%= pageTitle %>">
+  <meta property="og:description" content="<%= pageDescription %>">
+  <meta property="og:image" content="<%= siteUrl %>/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Check Da Kine: Honolulu Police Department arrests and dispatch calls, over a Honolulu skyline">
+  <%# X reads the title, description, and image from the og: tags above %>
+  <meta name="twitter:card" content="summary_large_image">
+
   <link rel="stylesheet" href="/css/normalize.css">
   <%# A page's own library styles load before styles.css, so the site's rules win %>
   <% (locals.styles ?? []).forEach((href) => { %>
