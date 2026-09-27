@@ -900,6 +900,32 @@ Dispatches
   color: var(--colorTextMuted);
 }
 
+/* Leaflet needs the map box to have a height */
+.callMap {
+  height: 20rem;
+  margin-bottom: var(--spaceSm);
+  border: var(--borderWidth) solid var(--colorBorder);
+  border-radius: var(--radiusMd);
+}
+
+.mapNote {
+  margin-bottom: var(--spaceMd);
+  font-size: var(--fontSizeSm);
+  color: var(--colorTextMuted);
+}
+
+.mapPopupType,
+.mapPopupLine,
+.mapPopupNote {
+  display: block;
+}
+
+.mapPopupNote {
+  margin-top: var(--spaceXs);
+  font-style: italic;
+  color: var(--colorTextMuted);
+}
+
 .callList {
   margin: 0;
   padding: 0;
@@ -1003,6 +1029,10 @@ Media queries
   .callItem {
     grid-template-columns: 8rem minmax(8rem, 13rem) 1fr 5.5rem;
     align-items: baseline;
+  }
+
+  .callMap {
+    height: 26rem;
   }
 }
 
