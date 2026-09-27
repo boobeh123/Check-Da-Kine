@@ -24,6 +24,7 @@ exports.getArrests = async (req, res) => {
 
   res.status(errors.length > 0 ? 400 : 200).render('arrestsView', {
     title: 'Arrests',
+    description: "Every arrest in the Honolulu Police Department's published arrest logs, newest first, with each charge, statute, and court date. Search by charge, location, or report number.",
     scripts: ['/js/arrestFeed.js'],
     errors,
     showNames,
