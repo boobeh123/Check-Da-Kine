@@ -46,6 +46,10 @@ const drawMap = () => {
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    // OpenStreetMap's tile policy requires a Referer and sends an "Access blocked" tile
+    // without one. The site-wide header (helmet) sends none, so the tiles alone send the
+    // site's domain; never a page path.
+    referrerPolicy: 'strict-origin',
   }).addTo(map);
 
   // A 2px white ring keeps overlapping dots distinct
