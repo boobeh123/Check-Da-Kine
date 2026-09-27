@@ -4,103 +4,107 @@
 <body>
   <%- include('partials/header') %>
 
-  <main id="mainContent" class="pageMain pageWidth">
-    <section class="dispatchIntro">
-      <h1>Police dispatch calls</h1>
-      <p>The calls HPD is handling right now, from its <a href="<%= sourceUrl %>">active dispatch calls page</a>, checked every 10 minutes.</p>
-      <% if (lastUpdated) { %>
-        <p class="dispatchUpdated">HPD last updated its list <%= lastUpdated %>. Addresses are shown as HPD masks them.</p>
-      <% } %>
-      <% if (stale) { %>
-        <%- include('partials/staleNotice', {
-          message: `HPD's list hasn't changed since ${lastUpdated} (${stale.ago}). Either HPD has stopped updating it, or our checks have stopped, so some of these calls may already be closed.`,
-        }) %>
-      <% } %>
+  <main id="mainContent" class="bandMain">
+    <section class="pageBand">
+      <div class="bandInner pageWidth">
+        <h1>Police dispatch calls</h1>
+        <p class="bandLead">The calls HPD is handling right now, from its <a href="<%= sourceUrl %>">active dispatch calls page</a>, checked every 10 minutes.</p>
+        <% if (lastUpdated) { %>
+          <p class="bandNote">HPD last updated its list <%= lastUpdated %>. Addresses are shown as HPD masks them.</p>
+        <% } %>
+        <% if (stale) { %>
+          <%- include('partials/staleNotice', {
+            message: `HPD's list hasn't changed since ${lastUpdated} (${stale.ago}). Either HPD has stopped updating it, or our checks have stopped, so some of these calls may already be closed.`,
+          }) %>
+        <% } %>
+      </div>
     </section>
 
-    <% if (!lastUpdated) { %>
-      <section class="card emptyState">
-        <h2>No dispatch calls yet</h2>
-        <p>No check of HPD's dispatch calls has been saved yet.</p>
-      </section>
-    <% } else { %>
-      <section class="card dispatchActive">
-        <h2>Active now (<%= activeCalls.length %>)</h2>
-        <% if (mapPoints.length > 0) { %>
-          <%# dispatchMap.js draws one dot per call from data-calls; the list below has every call too %>
-          <div class="callMap" data-calls="<%= JSON.stringify(mapPoints) %>" role="region" aria-label="Map of active calls"></div>
-          <p class="mapNote">
-            Dots are approximate: HPD masks house numbers, so each call is placed at its block, or on its street when the block couldn't be found.
-            <% if (unplacedCount > 0) { %>
-              <%= unplacedCount %> <%= unplacedCount === 1 ? "call couldn't" : "calls couldn't" %> be placed on the map.
+    <div class="bandContent pageWidth">
+      <% if (!lastUpdated) { %>
+        <section class="card emptyState">
+          <h2>No dispatch calls yet</h2>
+          <p>No check of HPD's dispatch calls has been saved yet.</p>
+        </section>
+      <% } else { %>
+        <section class="card dispatchActive">
+          <h2>Active now (<%= activeCalls.length %>)</h2>
+          <% if (mapPoints.length > 0) { %>
+            <%# dispatchMap.js draws one dot per call from data-calls; the list below has every call too %>
+            <div class="callMap" data-calls="<%= JSON.stringify(mapPoints) %>" role="region" aria-label="Map of active calls"></div>
+            <p class="mapNote">
+              Dots are approximate: HPD masks house numbers, so each call is placed at its block, or on its street when the block couldn't be found.
+              <% if (unplacedCount > 0) { %>
+                <%= unplacedCount %> <%= unplacedCount === 1 ? "call couldn't" : "calls couldn't" %> be placed on the map.
+              <% } %>
+            </p>
+          <% } %>
+          <% if (activeCalls.length === 0) { %>
+            <p>HPD's latest update listed no open calls.</p>
+          <% } else { %>
+            <ol class="callList">
+              <% activeCalls.forEach((call) => { %>
+                <li class="callItem">
+                  <time class="callTime" datetime="<%= call.receivedIso %>"><%= call.receivedAt %></time>
+                  <span class="callType"><%= call.type %></span>
+                  <span class="callPlace"><%= call.place %></span>
+                  <span class="callDistrict"><%= call.district %></span>
+                </li>
+              <% }) %>
+            </ol>
+          <% } %>
+        </section>
+
+        <section class="summarySection">
+          <h2>The last <%= historyDays %> days</h2>
+          <dl class="statRow">
+            <div class="statTile">
+              <dt class="statLabel">Calls seen</dt>
+              <dd class="statValue"><%= history.total.toLocaleString('en-US') %></dd>
+            </div>
+            <% if (history.topType) { %>
+              <div class="statTile">
+                <dt class="statLabel">Most common call</dt>
+                <dd class="statValue statValueText"><%= history.topType.label %></dd>
+                <dd class="statNote"><%= history.topType.count.toLocaleString('en-US') %> calls</dd>
+              </div>
             <% } %>
-          </p>
-        <% } %>
-        <% if (activeCalls.length === 0) { %>
-          <p>HPD's latest update listed no open calls.</p>
-        <% } else { %>
-          <ol class="callList">
-            <% activeCalls.forEach((call) => { %>
-              <li class="callItem">
-                <time class="callTime" datetime="<%= call.receivedIso %>"><%= call.receivedAt %></time>
-                <span class="callType"><%= call.type %></span>
-                <span class="callPlace"><%= call.place %></span>
-                <span class="callDistrict"><%= call.district %></span>
-              </li>
-            <% }) %>
-          </ol>
-        <% } %>
-      </section>
-
-      <section class="summarySection">
-        <h2>The last <%= historyDays %> days</h2>
-        <dl class="statRow">
-          <div class="statTile">
-            <dt class="statLabel">Calls seen</dt>
-            <dd class="statValue"><%= history.total.toLocaleString('en-US') %></dd>
-          </div>
-          <% if (history.topType) { %>
-            <div class="statTile">
-              <dt class="statLabel">Most common call</dt>
-              <dd class="statValue statValueText"><%= history.topType.label %></dd>
-              <dd class="statNote"><%= history.topType.count.toLocaleString('en-US') %> calls</dd>
-            </div>
-          <% } %>
-          <% if (history.topDistrict) { %>
-            <div class="statTile">
-              <dt class="statLabel">Busiest district</dt>
-              <dd class="statValue statValueText"><%= history.topDistrict.label %></dd>
-              <dd class="statNote"><%= history.topDistrict.count.toLocaleString('en-US') %> calls</dd>
-            </div>
-          <% } %>
-        </dl>
-        <p class="dataNote">HPD lists a call only while it's open, and we check every 10 minutes, so a call that opens and closes between checks is never seen. Read these counts as "at least this many".</p>
-      </section>
-
-      <% if (history.total > 0) { %>
-        <section class="card chartCard">
-          <h2>Calls by type</h2>
-          <p class="chartCaption">The last <%= historyDays %> days, by the call type HPD listed.</p>
-          <%- include('partials/barList', { rows: history.byType }) %>
-          <%- include('partials/tableView', {
-            caption: 'Calls by type',
-            columns: ['Call type', 'Calls'],
-            rows: history.byType.map((row) => [row.label, row.count.toLocaleString('en-US')]),
-          }) %>
+            <% if (history.topDistrict) { %>
+              <div class="statTile">
+                <dt class="statLabel">Busiest district</dt>
+                <dd class="statValue statValueText"><%= history.topDistrict.label %></dd>
+                <dd class="statNote"><%= history.topDistrict.count.toLocaleString('en-US') %> calls</dd>
+              </div>
+            <% } %>
+          </dl>
+          <p class="dataNote">HPD lists a call only while it's open, and we check every 10 minutes, so a call that opens and closes between checks is never seen. Read these counts as "at least this many".</p>
         </section>
 
-        <section class="card chartCard">
-          <h2>Calls by district</h2>
-          <p class="chartCaption">The last <%= historyDays %> days, by HPD patrol district.</p>
-          <%- include('partials/barList', { rows: history.byDistrict }) %>
-          <%- include('partials/tableView', {
-            caption: 'Calls by district',
-            columns: ['District', 'Calls'],
-            rows: history.byDistrict.map((row) => [row.label, row.count.toLocaleString('en-US')]),
-          }) %>
-        </section>
+        <% if (history.total > 0) { %>
+          <section class="card chartCard">
+            <h2>Calls by type</h2>
+            <p class="chartCaption">The last <%= historyDays %> days, by the call type HPD listed.</p>
+            <%- include('partials/barList', { rows: history.byType }) %>
+            <%- include('partials/tableView', {
+              caption: 'Calls by type',
+              columns: ['Call type', 'Calls'],
+              rows: history.byType.map((row) => [row.label, row.count.toLocaleString('en-US')]),
+            }) %>
+          </section>
+
+          <section class="card chartCard">
+            <h2>Calls by district</h2>
+            <p class="chartCaption">The last <%= historyDays %> days, by HPD patrol district.</p>
+            <%- include('partials/barList', { rows: history.byDistrict }) %>
+            <%- include('partials/tableView', {
+              caption: 'Calls by district',
+              columns: ['District', 'Calls'],
+              rows: history.byDistrict.map((row) => [row.label, row.count.toLocaleString('en-US')]),
+            }) %>
+          </section>
+        <% } %>
       <% } %>
-    <% } %>
+    </div>
   </main>
 
   <%- include('partials/footer') %>
