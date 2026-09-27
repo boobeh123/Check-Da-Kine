@@ -4,6 +4,7 @@
 const mongoose = require('mongoose');
 const ArrestRecord = require('../../model/ArrestRecord');
 const { formatDateTime } = require('../dashboard/hawaiiDays');
+const { toSearchWords, toTextSearch } = require('./searchWords');
 
 const pageSize = 20;
 const sexLabels = { M: 'Male', F: 'Female' };
@@ -59,17 +60,27 @@ const toCard = (record, showNames) => ({
   warnings: record.warnings ?? [],
 });
 
-const toNextHref = (record) => {
-  const params = new URLSearchParams({
-    beforeTime: record.arrestedAt.toISOString(),
-    beforeId: String(record._id),
-  });
-  return `/arrests?${params}`;
+// Links keep the search, so "Load more" and "Back to the newest" stay within the results
+const toHref = (search, record) => {
+  const params = new URLSearchParams(search ? { q: search } : {});
+  if (record) {
+    params.set('beforeTime', record.arrestedAt.toISOString());
+    params.set('beforeId', String(record._id));
+  }
+  const query = params.toString();
+  return query ? `/arrests?${query}` : '/arrests';
 };
 
-// cursor: { beforeTime, beforeId } from the validated query, or null for the newest page
-const listArrests = async ({ cursor, showNames }) => {
-  const filter = olderThan(cursor);
+// Only arrests whose charges contain every search word. $text is an operator we write here,
+// not one taken from the request, so it's marked trusted for sanitizeFilter.
+const matchingSearch = (words) =>
+  words.length > 0 ? { $text: mongoose.trusted({ $search: toTextSearch(words) }) } : {};
+
+// cursor: { beforeTime, beforeId } from the validated query, or null for the newest page.
+// search: what was typed in the search box, or '' for every arrest.
+const listArrests = async ({ cursor, showNames, search = '' }) => {
+  const searchFilter = matchingSearch(toSearchWords(search));
+  const filter = { ...searchFilter, ...olderThan(cursor) };
 
   const [records, total, olderCount] = await Promise.all([
     ArrestRecord.find(filter)
@@ -78,7 +89,7 @@ const listArrests = async ({ cursor, showNames }) => {
       .select(showNames ? '+name' : '-offenses.officer')
       .populate('lastSeenIn', 'publishedAt pdfUrl sourceUrl')
       .lean(),
-    ArrestRecord.countDocuments(),
+    ArrestRecord.countDocuments(searchFilter),
     ArrestRecord.countDocuments(filter),
   ]);
 
@@ -91,7 +102,8 @@ const listArrests = async ({ cursor, showNames }) => {
     start,
     end: start + pageRecords.length - 1,
     isFirstPage: !cursor,
-    nextHref: records.length > pageSize ? toNextHref(pageRecords[pageRecords.length - 1]) : null,
+    firstPageHref: toHref(search),
+    nextHref: records.length > pageSize ? toHref(search, pageRecords[pageRecords.length - 1]) : null,
   };
 };
 
