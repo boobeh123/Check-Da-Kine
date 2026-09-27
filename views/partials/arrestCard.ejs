@@ -1,0 +1,43 @@
+<%# One arrest. tabindex="-1" lets arrestFeed.js move focus here after loading more. %>
+<article class="card arrestCard" tabindex="-1">
+  <header class="arrestHeader">
+    <h2 class="arrestTime"><%= card.arrestedAt %></h2>
+    <p class="arrestName<% if (!card.nameShown) { %> arrestNameMissing<% } %>"><%= card.name %></p>
+    <% if (card.details) { %>
+      <p class="arrestDetails"><%= card.details %></p>
+    <% } %>
+  </header>
+
+  <ol class="offenseList">
+    <% card.offenses.forEach((offense) => { %>
+      <li class="offenseItem">
+        <h3 class="offenseTitle"><%= offense.title %></h3>
+        <dl class="offenseDetails">
+          <% offense.fields.forEach(([label, value]) => { %>
+            <div class="offenseField">
+              <dt><%= label %></dt>
+              <dd><%= value %></dd>
+            </div>
+          <% }) %>
+        </dl>
+      </li>
+    <% }) %>
+  </ol>
+
+  <footer class="arrestFooter">
+    <% if (card.source) { %>
+      <p>From <a href="<%= card.source.url %>">HPD's arrest log of <%= card.source.label %></a>.</p>
+    <% } %>
+    <span class="ocrNote">Read from HPD's PDF by OCR, so this text may not be completely accurate.</span>
+    <% if (card.warnings.length > 0) { %>
+      <details class="arrestWarnings">
+        <summary>Details flagged for review</summary>
+        <ul>
+          <% card.warnings.forEach((warning) => { %>
+            <li><%= warning %></li>
+          <% }) %>
+        </ul>
+      </details>
+    <% } %>
+  </footer>
+</article>
