@@ -4,6 +4,7 @@
 const ArrestLog = require('../../model/ArrestLog');
 const ArrestRecord = require('../../model/ArrestRecord');
 const { withShares, toTopRows } = require('../chartRows');
+const { findStaleness } = require('../staleness');
 const { ethnicityGroups, toEthnicityGroup } = require('./ethnicityGroups');
 const {
   toHawaiiDay,
@@ -25,6 +26,9 @@ const ageBands = [
 ];
 
 const shownEthnicities = 10; // The rest fold into one "All others" bar
+
+// HPD publishes a log every 6 hours, so this allows for one arriving a little late
+const staleAfterHours = 8;
 
 const percentOf = (count, total) => (total > 0 ? Math.round((count / total) * 100) : 0);
 
@@ -200,6 +204,7 @@ const getDashboard = async ({ start, end }) => {
     span,
     today,
     lastUpdated: lastLog ? formatDateTime(lastLog.publishedAt) : null,
+    stale: lastLog ? findStaleness(lastLog.publishedAt, staleAfterHours) : null,
     ...stats,
   };
 };
