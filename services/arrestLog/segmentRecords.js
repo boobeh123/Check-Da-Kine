@@ -7,6 +7,7 @@ const {
   recordStartScan,
   offenseStartScan,
   startPadding,
+  inkThreshold,
 } = require('./layoutConstants');
 
 const channels = 3;
@@ -93,4 +94,45 @@ const segmentRecords = (strip) => {
   });
 };
 
-module.exports = { buildRecordStrip, segmentRecords };
+const hasInk = (image, x, top, bottom) => {
+  for (let y = top; y < bottom; y += 1) {
+    if (image.pixels[(y * image.width + x) * channels] < inkThreshold) return true;
+  }
+  return false;
+};
+
+// Finds each stretch of columns with ink in a line of text: roughly one per character.
+// line is a box relative to originTop, the same shape as the field boxes.
+// Returns [{ left, right }] in strip coordinates, left to right.
+const findInkRuns = (image, line, originTop, limitBottom) => {
+  const top = originTop + line.top;
+  const bottom = Math.min(originTop + line.bottom, limitBottom, image.height);
+  const runs = [];
+  let runStart = null;
+
+  for (let x = line.left; x < line.right; x += 1) {
+    const inked = hasInk(image, x, top, bottom);
+    if (inked && runStart === null) runStart = x;
+    if (!inked && runStart !== null) {
+      runs.push({ left: runStart, right: x - 1 });
+      runStart = null;
+    }
+  }
+  if (runStart !== null) runs.push({ left: runStart, right: line.right - 1 });
+
+  return runs;
+};
+
+// Joins runs closer than minGap blank columns into words
+const groupIntoWords = (runs, minGap) =>
+  runs.reduce((words, run) => {
+    const lastWord = words[words.length - 1];
+    if (lastWord && run.left - lastWord.right - 1 < minGap) {
+      lastWord.right = run.right;
+    } else {
+      words.push({ ...run });
+    }
+    return words;
+  }, []);
+
+module.exports = { buildRecordStrip, segmentRecords, findInkRuns, groupIntoWords };
