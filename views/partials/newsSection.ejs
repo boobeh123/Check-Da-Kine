@@ -1,0 +1,45 @@
+<%# "Latest news from HPD": the newest release featured, the next few listed. news: { featured,
+    more, moreUrl }. Each card is one link to the release on HPD's site: its title link covers
+    the card. Releases without a photo get the band's gradient and skyline instead. %>
+<section class="newsSection" aria-labelledby="newsHeading">
+  <div class="sectionHeader">
+    <h2 id="newsHeading">Latest news from HPD</h2>
+    <a href="<%= news.moreUrl %>">More news on HPD's site <span aria-hidden="true">→</span></a>
+  </div>
+
+  <div class="newsLayout">
+    <article class="card newsFeatured">
+      <% if (news.featured.image) { %>
+        <img class="newsImage" src="<%= news.featured.image.url %>" alt="<%= news.featured.image.alt %>" loading="lazy">
+      <% } else { %>
+        <div class="newsImage newsPlaceholder" aria-hidden="true"></div>
+      <% } %>
+      <div class="newsBody">
+        <h3 class="newsTitle"><a href="<%= news.featured.url %>"><%= news.featured.title %></a></h3>
+        <p class="newsDate"><time datetime="<%= news.featured.publishedIso %>"><%= news.featured.publishedOn %></time></p>
+        <% if (news.featured.excerpt) { %>
+          <p class="newsExcerpt"><%= news.featured.excerpt %></p>
+        <% } %>
+        <p class="newsReadMore" aria-hidden="true">Read on HPD's site →</p>
+      </div>
+    </article>
+
+    <% if (news.more.length > 0) { %>
+      <ul class="newsList">
+        <% news.more.forEach((release) => { %>
+          <li class="card newsItem">
+            <% if (release.image) { %>
+              <img class="newsThumb" src="<%= release.image.url %>" alt="" loading="lazy">
+            <% } else { %>
+              <div class="newsThumb newsPlaceholder" aria-hidden="true"></div>
+            <% } %>
+            <div>
+              <h3 class="newsTitle"><a href="<%= release.url %>"><%= release.title %></a></h3>
+              <p class="newsDate"><time datetime="<%= release.publishedIso %>"><%= release.publishedOn %></time></p>
+            </div>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </div>
+</section>
