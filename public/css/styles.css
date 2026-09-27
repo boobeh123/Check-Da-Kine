@@ -39,6 +39,7 @@ Base
      palette checked for colorblind separation; each group keeps its color in every range. */
   --colorChartBar: var(--colorPrimary);
   --colorChartBarHover: var(--colorPrimaryDark);
+  --colorChartBarPartial: #9fc3e3; /* A bar still filling up, like today's */
   --colorGridline: #e1e0d9;
   --colorSeriesPacificIslander: #2a78d6;
   --colorSeriesWhite: #eb6834;
@@ -78,6 +79,7 @@ Base
   --barThickness: 1rem;
   --columnWidth: 1.5rem;
   --columnPlotHeight: 12rem;
+  --trendHeight: 3rem;
   --unitSize: 0.75rem;
   --gapSurface: 2px;
 
@@ -354,6 +356,96 @@ Components
 
 .statTileHero .statValue {
   font-size: var(--fontSizeHero);
+}
+
+/* Home: on phones the Arrests tile takes the full row, above the other three in a row;
+   wider screens give it two of five columns (see Media queries) */
+.statRowHome {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.statRowHome .statTileHero {
+  grid-column: 1 / -1;
+}
+
+/* The chart sits beside the number, with the notes below both */
+.statTileHero.hasTrend {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: var(--spaceLg);
+  align-items: end;
+}
+
+.statTileHero.hasTrend > :not(.statValue, .trendCell) {
+  grid-column: 1 / -1;
+}
+
+.trendCell {
+  margin: 0 0 var(--spaceSm);
+}
+
+/* The Arrests tile's chart over time: thin columns on a hairline, each with a tooltip.
+   dashboardCharts.js sets --barShare, as for the other charts. */
+.trendBars {
+  display: flex;
+  gap: var(--gapSurface);
+  align-items: flex-end;
+  height: var(--trendHeight);
+  border-bottom: var(--borderWidth) solid var(--colorGridline);
+}
+
+/* The full height is the hover target, so even a short bar is easy to point at */
+.trendSlot {
+  position: relative;
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  max-width: var(--columnWidth);
+  height: 100%;
+}
+
+.trendBar {
+  width: 100%;
+  height: calc(100% * var(--barShare, 0) / 100);
+  background-color: var(--colorChartBar);
+  border-radius: var(--radiusUnit) var(--radiusUnit) 0 0;
+  transition: height var(--growDuration) var(--easeOut);
+}
+
+.trendBarPartial {
+  background-color: var(--colorChartBarPartial);
+}
+
+.trendSlot:hover .trendBar {
+  background-color: var(--colorChartBarHover);
+}
+
+.trendSlot:hover::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + var(--spaceXs));
+  left: 50%;
+  z-index: 1;
+  padding: 0 var(--spaceSm);
+  font-size: var(--fontSizeXs);
+  white-space: nowrap;
+  color: var(--colorOnPrimary);
+  pointer-events: none;
+  background-color: var(--colorText);
+  border-radius: var(--radiusSm);
+  transform: translateX(-50%);
+}
+
+/* Tooltips at the ends line up with the chart's edge instead of hanging past it */
+.trendSlot:nth-child(-n + 3):hover::after {
+  left: 0;
+  transform: none;
+}
+
+.trendSlot:nth-last-child(-n + 3):hover::after {
+  right: 0;
+  left: auto;
+  transform: none;
 }
 
 .statNote {
@@ -1122,6 +1214,14 @@ Media queries
 
   .card {
     padding: var(--spaceLg);
+  }
+
+  .statRowHome {
+    grid-template-columns: 2fr repeat(3, minmax(0, 1fr));
+  }
+
+  .statRowHome .statTileHero {
+    grid-column: auto;
   }
 
   .offenseField {
