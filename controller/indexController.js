@@ -12,6 +12,7 @@ exports.getHome = async (req, res) => {
 
   res.status(errors.length > 0 ? 400 : 200).render('homeView', {
     title: 'Honolulu Police Department arrest statistics',
+    description: "Arrests from the Honolulu Police Department's published arrest logs, counted by age, sex, and ethnicity for any date range.",
     scripts: ['/js/dashboardCharts.js'],
     errors,
     ...dashboard,
