@@ -4,9 +4,11 @@
   <h3 align="center">Check Da Kine</h3>
 
   <p align="center">
-    The original HPD Stats project was created in Python by <a href="https://www.github.com/tyliec">Tyliec</a><br />
-
-    Check Da Kine is my take on HPD Stats using JavaScript & it's ecosystem to mimic python's functionality to track the statistics of the arrests from the <a href="https://www.honolulupd.org/">Honolulu Police Department</a>
+    The original HPD Stats project was created in Python by <a href="https://www.github.com/tyliec">Tyliec</a>
+    <br />
+    Check Da Kine is our take on HPD Stats using JavaScript & it's ecosystem to mimic the HPD Stat's functionality which uses python to track the statistics of the arrest from the Honolulu Police Department
+    <br />
+    Deployed on Railway: https://checkdakine.up.railway.app/
 </p>
 
 ## About The Project
