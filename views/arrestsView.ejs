@@ -15,9 +15,25 @@
       <% } %>
     </section>
 
+    <form class="arrestSearch" method="get" action="/arrests" role="search">
+      <label for="arrestSearchInput">Search arrests</label>
+      <div class="searchRow">
+        <input type="search" id="arrestSearchInput" name="q" value="<%= search %>" maxlength="100" aria-describedby="arrestSearchHint">
+        <button class="button" type="submit">Search</button>
+      </div>
+      <p class="searchHint" id="arrestSearchHint">Whole words in a charge, statute, location, or report number, like ASSAULT, KALAKAUA, or 708-0833.</p>
+    </form>
+
+    <% if (search) { %>
+      <p class="searchSummary">
+        <%= total.toLocaleString('en-US') %> <%= total === 1 ? 'arrest matches' : 'arrests match' %> "<%= search %>".
+        <a href="/arrests">Clear search</a>
+      </p>
+    <% } %>
+
     <% if (errors.length > 0) { %>
       <div class="formErrors" role="alert">
-        <p>That link didn't work, so the newest arrests are shown instead:</p>
+        <p>That didn't work, so the newest arrests are shown instead:</p>
         <ul>
           <% errors.forEach((error) => { %>
             <li><%= error %></li>
@@ -27,10 +43,15 @@
     <% } %>
 
     <% if (!isFirstPage) { %>
-      <p><a href="/arrests">Back to the newest arrests</a></p>
+      <p><a href="<%= firstPageHref %>">Back to the newest <%= search ? 'matches' : 'arrests' %></a></p>
     <% } %>
 
-    <% if (cards.length === 0) { %>
+    <% if (cards.length === 0 && search) { %>
+      <section class="card emptyState">
+        <h2>No arrests match "<%= search %>"</h2>
+        <p>Search looks for whole words, and every word has to match. Try fewer words, or a different spelling.</p>
+      </section>
+    <% } else if (cards.length === 0) { %>
       <section class="card emptyState">
         <h2>No arrests yet</h2>
         <p>No arrest logs have been imported yet.</p>
@@ -42,14 +63,15 @@
         <% }) %>
       </div>
 
-      <p class="feedStatus" role="status" data-start="<%= start %>" data-end="<%= end %>" data-total="<%= total %>">
+      <% const endMessage = search ? "That's every matching arrest." : "That's every arrest on record."; %>
+      <p class="feedStatus" role="status" data-start="<%= start %>" data-end="<%= end %>" data-total="<%= total %>" data-end-message="<%= endMessage %>">
         Showing arrests <%= start.toLocaleString('en-US') %>–<%= end.toLocaleString('en-US') %> of <%= total.toLocaleString('en-US') %>.
       </p>
 
       <% if (nextHref) { %>
         <a class="button loadMore" href="<%= nextHref %>">Load more arrests</a>
       <% } else { %>
-        <p class="feedEnd">That's every arrest on record.</p>
+        <p class="feedEnd"><%= endMessage %></p>
       <% } %>
     <% } %>
   </main>
