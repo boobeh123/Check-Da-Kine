@@ -7,7 +7,8 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "parse": "node jobs/parseLocalPdf.js",
-    "scrape": "node jobs/scrapeArrestLogs.js"
+    "scrape": "node jobs/scrapeArrestLogs.js",
+    "create-user": "node jobs/createUser.js"
   },
   "license": "UNLICENSED",
   "type": "commonjs",
@@ -16,15 +17,22 @@
   },
   "dependencies": {
     "@napi-rs/canvas": "^1.0.9",
+    "bcrypt": "^6.0.0",
     "cheerio": "^1.2.0",
     "cloudinary": "^2.11.0",
+    "connect-flash": "^0.1.1",
+    "connect-mongo": "^6.0.0",
     "dotenv": "^18.0.4",
     "ejs": "^6.0.1",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
+    "express-session": "^1.19.0",
     "express-validator": "^7.3.2",
     "helmet": "^8.3.0",
     "mongoose": "^9.10.2",
     "morgan": "^1.12.1",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
     "pdfjs-dist": "^6.3.289",
     "sharp": "^0.35.4",
     "tesseract.js": "^7.0.0"
