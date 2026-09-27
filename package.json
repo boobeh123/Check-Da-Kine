@@ -9,6 +9,7 @@
     "parse": "node jobs/parseLocalPdf.js",
     "scrape": "node jobs/scrapeArrestLogs.js",
     "reparse": "node jobs/reparseArrestLogs.js",
+    "scrape-dispatches": "node jobs/scrapeDispatches.js",
     "create-user": "node jobs/createUser.js"
   },
   "license": "UNLICENSED",
