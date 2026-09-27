@@ -1,8 +1,9 @@
-// Everything the Dispatches page shows: the calls HPD listed in its latest update, and
-// counts for the last 7 days.
+// Everything the Dispatches page shows: the calls HPD listed in its latest update (with map
+// coordinates where known), and counts for the last 7 days.
 
 const Dispatch = require('../../model/Dispatch');
 const { toTopRows } = require('../chartRows');
+const { findPlaced, placeKey } = require('./geocodePlaces');
 const { formatDateTime, formatShortDateTime } = require('../dashboard/hawaiiDays');
 
 const historyDays = 7;
@@ -40,9 +41,20 @@ const getDispatchPage = async () => {
   const byType = toTopRows(facets.byType, shownTypes);
   const byDistrict = toTopRows(facets.byDistrict, facets.byDistrict.length); // All eight districts
 
+  // Dots for the map: only what the popup shows, for calls whose place was found
+  const placed = await findPlaced(activeCalls);
+  const mapPoints = activeCalls
+    .filter((call) => placed.has(placeKey(call)))
+    .map((call) => {
+      const place = placed.get(placeKey(call));
+      return { ...toCallRow(call), lat: place.lat, lng: place.lng, streetLevel: place.precision === 'street' };
+    });
+
   return {
     lastUpdated: formatDateTime(latest.lastSeenAt),
     activeCalls: activeCalls.map(toCallRow),
+    mapPoints,
+    unplacedCount: activeCalls.length - mapPoints.length,
     historyDays,
     history: {
       total: facets.total[0]?.count ?? 0,
