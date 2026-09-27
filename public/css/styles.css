@@ -770,6 +770,44 @@ Arrests
   color: var(--colorTextMuted);
 }
 
+.arrestSearch {
+  margin-bottom: var(--spaceMd);
+}
+
+.arrestSearch label {
+  display: block;
+  margin-bottom: var(--spaceXs);
+  font-weight: 600;
+}
+
+.searchRow {
+  display: flex;
+  gap: var(--spaceSm);
+}
+
+/* min-width: 0 lets the field shrink beside the button on narrow phones */
+.searchRow input {
+  flex: 1;
+  min-width: 0;
+  padding: var(--spaceSm);
+  font: inherit;
+  color: var(--colorText);
+  background-color: var(--colorSurface);
+  border: var(--borderWidth) solid var(--colorInputBorder);
+  border-radius: var(--radiusMd);
+}
+
+.searchHint {
+  margin: var(--spaceXs) 0 0;
+  font-size: var(--fontSizeSm);
+  color: var(--colorTextMuted);
+}
+
+.searchSummary {
+  margin-bottom: var(--spaceMd);
+  font-weight: 600;
+}
+
 .arrestFeed {
   display: grid;
   gap: var(--spaceMd);
