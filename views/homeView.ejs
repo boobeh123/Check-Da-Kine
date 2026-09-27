@@ -22,6 +22,7 @@
         <%- include('partials/dateFilter') %>
       </div>
     </section>
+    
 
     <div class="bandContent pageWidth">
       <% if (totals.arrests === 0) { %>
@@ -70,6 +71,14 @@
           <% } %>
         </section>
 
+      <% if (news) { %>
+        <%- include('partials/newsSection', { news }) %>
+      <% } %>
+
+      <% if (xPosts) { %>
+        <%- include('partials/xPostsSection', { xPosts }) %>
+      <% } %>
+
         <section class="card chartCard">
           <h2>Arrests by age</h2>
           <p class="chartCaption">
@@ -110,10 +119,6 @@
             rows: officerGroups.map((group) => [group.label, group.count.toLocaleString('en-US')]),
           }) %>
         </section>
-      <% } %>
-
-      <% if (news) { %>
-        <%- include('partials/newsSection', { news }) %>
       <% } %>
 
       <section class="aboutData">
