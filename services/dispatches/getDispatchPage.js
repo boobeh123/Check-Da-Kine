@@ -14,7 +14,9 @@ const msPerDay = 24 * 60 * 60 * 1000;
 // HPD's list normally changes every 15 minutes or so
 const staleAfterHours = 1;
 
-const toCallRow = (call) => ({
+// index: the call's place in the list, which links its row to its dot on the map
+const toCallRow = (call, index) => ({
+  id: String(index),
   receivedAt: formatShortDateTime(call.receivedAt),
   receivedIso: call.receivedAt.toISOString(),
   type: call.type,
@@ -47,12 +49,11 @@ const getDispatchPage = async () => {
 
   // Dots for the map: only what the popup shows, for calls whose place was found
   const placed = await findPlaced(activeCalls);
-  const mapPoints = activeCalls
-    .filter((call) => placed.has(placeKey(call)))
-    .map((call) => {
-      const place = placed.get(placeKey(call));
-      return { ...toCallRow(call), lat: place.lat, lng: place.lng, streetLevel: place.precision === 'street' };
-    });
+  const mapPoints = activeCalls.flatMap((call, index) => {
+    const place = placed.get(placeKey(call));
+    if (!place) return [];
+    return [{ ...toCallRow(call, index), lat: place.lat, lng: place.lng, streetLevel: place.precision === 'street' }];
+  });
 
   return {
     lastUpdated: formatDateTime(latest.lastSeenAt),
