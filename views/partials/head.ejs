@@ -4,6 +4,10 @@
   <meta name="description" content="Statistics from the Honolulu Police Department's published arrest logs.">
   <title><%= title %> | Check Da Kine</title>
   <link rel="stylesheet" href="/css/normalize.css">
+  <%# A page's own library styles load before styles.css, so the site's rules win %>
+  <% (locals.styles ?? []).forEach((href) => { %>
+    <link rel="stylesheet" href="<%= href %>">
+  <% }) %>
   <link rel="stylesheet" href="/css/styles.css">
   <% (locals.scripts ?? []).forEach((src) => { %>
     <script src="<%= src %>" defer></script>
