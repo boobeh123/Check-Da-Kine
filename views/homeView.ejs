@@ -70,7 +70,9 @@
             <p class="dataNote"><%= totals.flagged.toLocaleString('en-US') %> of these arrests have a field that OCR couldn't read cleanly. They're still counted wherever the field was readable.</p>
           <% } %>
         </section>
+      <% } %>
 
+      <%# HPD's news and X posts don't depend on the date range, so they show even when it has no arrests %>
       <% if (news) { %>
         <%- include('partials/newsSection', { news }) %>
       <% } %>
@@ -79,6 +81,7 @@
         <%- include('partials/xPostsSection', { xPosts }) %>
       <% } %>
 
+      <% if (totals.arrests > 0) { %>
         <section class="card chartCard">
           <h2>Arrests by age</h2>
           <p class="chartCaption">
