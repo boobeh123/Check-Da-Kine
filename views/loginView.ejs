@@ -4,33 +4,39 @@
 <body>
   <%- include('partials/header') %>
 
-  <main id="mainContent" class="pageMain pageWidth">
-    <section class="card loginCard">
-      <h1>Log in</h1>
-      <p>Accounts are by invitation only.</p>
-
-      <% if (errors.length > 0) { %>
-        <div class="formErrors" role="alert">
-          <ul>
-            <% errors.forEach((error) => { %>
-              <li><%= error.msg %></li>
-            <% }) %>
-          </ul>
-        </div>
-      <% } %>
-
-      <form class="loginForm" method="post" action="/login">
-        <div class="formField">
-          <label for="email">Email</label>
-          <input type="email" id="email" name="email" autocomplete="username" required>
-        </div>
-        <div class="formField">
-          <label for="password">Password</label>
-          <input type="password" id="password" name="password" autocomplete="current-password" required>
-        </div>
-        <button class="button" type="submit">Log in</button>
-      </form>
+  <main id="mainContent" class="bandMain">
+    <section class="pageBand">
+      <div class="bandInner pageWidth loginIntro">
+        <h1>Log in</h1>
+        <p class="bandLead">Accounts are by invitation only.</p>
+      </div>
     </section>
+
+    <div class="bandContent pageWidth">
+      <section class="card loginCard">
+        <% if (errors.length > 0) { %>
+          <div class="formErrors" role="alert">
+            <ul>
+              <% errors.forEach((error) => { %>
+                <li><%= error.msg %></li>
+              <% }) %>
+            </ul>
+          </div>
+        <% } %>
+
+        <form class="loginForm" method="post" action="/login">
+          <div class="formField">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" autocomplete="username" required>
+          </div>
+          <div class="formField">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" autocomplete="current-password" required>
+          </div>
+          <button class="button" type="submit">Log in</button>
+        </form>
+      </section>
+    </div>
   </main>
 
   <%- include('partials/footer') %>
