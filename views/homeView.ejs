@@ -4,15 +4,15 @@
 <body>
   <%- include('partials/header') %>
 
-  <main id="mainContent" class="homeMain">
-    <%# The hero band runs edge to edge; its contents stay within the page width %>
-    <section class="homeHero">
-      <div class="heroInner pageWidth">
+  <main id="mainContent" class="bandMain">
+    <%# The band runs edge to edge; its contents stay within the page width %>
+    <section class="pageBand">
+      <div class="bandInner pageWidth">
         <%- include('partials/flashMessages') %>
         <h1>Honolulu Police Department arrest statistics</h1>
-        <p class="heroLead">Check Da Kine turns the Honolulu Police Department's published arrest logs into statistics anyone can explore.</p>
+        <p class="bandLead">Check Da Kine turns the Honolulu Police Department's published arrest logs into statistics anyone can explore.</p>
         <% if (lastUpdated) { %>
-          <p class="heroUpdated">Last updated <%= lastUpdated %>. All dates and times are Hawaii time.</p>
+          <p class="bandNote">Last updated <%= lastUpdated %>. All dates and times are Hawaii time.</p>
         <% } %>
         <% if (stale) { %>
           <%- include('partials/staleNotice', {
@@ -23,7 +23,7 @@
       </div>
     </section>
 
-    <div class="homeContent pageWidth">
+    <div class="bandContent pageWidth">
       <% if (totals.arrests === 0) { %>
         <section class="card emptyState">
           <h2>No arrests in this date range</h2>
