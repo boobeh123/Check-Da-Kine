@@ -37,4 +37,17 @@ const arrestRecordSchema = new mongoose.Schema(
 // The Arrests feed lists newest first and pages by (arrestedAt, _id)
 arrestRecordSchema.index({ arrestedAt: -1, _id: -1 });
 
+// The Arrests search box: whole words in each charge's name, statute, location, and report
+// number. Names are deliberately left out. 'none' turns off English stemming and stop words,
+// since HPD's text is codes and street names.
+arrestRecordSchema.index(
+  {
+    'offenses.offenseName': 'text',
+    'offenses.statute': 'text',
+    'offenses.location': 'text',
+    'offenses.reportNumber': 'text',
+  },
+  { name: 'arrestSearch', default_language: 'none' }
+);
+
 module.exports = mongoose.model('ArrestRecord', arrestRecordSchema);
