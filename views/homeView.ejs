@@ -36,11 +36,18 @@
       <% } else { %>
         <section class="summarySection">
           <h2 class="visuallyHidden">Summary for <%= range.label %></h2>
-          <dl class="statRow">
-            <div class="statTile statTileHero">
+          <% const showTrend = trend && trend.bars.length > 1; %>
+          <dl class="statRow statRowHome">
+            <div class="statTile statTileHero<%= showTrend ? ' hasTrend' : '' %>">
               <dt class="statLabel">Arrests</dt>
               <dd class="statValue"><%= totals.arrests.toLocaleString('en-US') %></dd>
+              <% if (showTrend) { %>
+                <dd class="trendCell"><%- include('partials/trendChart', { trend }) %></dd>
+              <% } %>
               <dd class="statNote"><%= range.label %> (<%= range.days %> <%= range.days === 1 ? 'day' : 'days' %>)</dd>
+              <% if (showTrend) { %>
+                <dd class="statNote">Busiest <%= trend.unit %>: <%= trend.busiest.label %> (<%= trend.busiest.count.toLocaleString('en-US') %> <%= trend.busiest.count === 1 ? 'arrest' : 'arrests' %>)</dd>
+              <% } %>
             </div>
             <div class="statTile">
               <dt class="statLabel">Median age</dt>
