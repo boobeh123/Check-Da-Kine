@@ -43,9 +43,13 @@ const toCard = (record, showNames) => ({
   arrestedAt: formatDateTime(record.arrestedAt),
   name: showNames ? record.name || 'Name not readable' : 'Name withheld',
   nameShown: showNames && Boolean(record.name),
-  details: [record.age, sexLabels[record.sex], record.ethnicities.join(', ')].filter(Boolean).join(' · '),
+  // Shown as chips: "Age 32", "Male", then one per ethnicity
+  chips: [record.age && `Age ${record.age}`, sexLabels[record.sex], ...record.ethnicities].filter(Boolean),
   offenses: record.offenses.map((offense) => ({
-    title: [offense.offenseName, offense.statute].filter(Boolean).join(' · ') || 'Offense not readable',
+    name: offense.offenseName || 'Offense not readable',
+    statute: offense.statute,
+    // Only a printed release date counts as released; a blank one proves nothing about custody
+    released: Boolean(offense.releasedAt),
     fields: toOffenseFields(offense, showNames),
   })),
   source: record.lastSeenIn && {
