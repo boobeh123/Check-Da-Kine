@@ -23,7 +23,7 @@ I wanted to see what JavaScript's ecosystem is capable of, since it's my stronge
 The Attorney General's Office provides [annual reports](https://ag.hawaii.gov/cpja/rs/cih/) as to the state of crime in Hawaii. This project provides a mechanism to validate these reports, track the numbers daily, and keep an archive of the raw data.
 
 ## How It Works
-Using a combination of image cropping and OCR, we extract data about each arrest from every arrest log HPD publishes (four a day). A second scraper records HPD's active dispatch calls every 10 minutes and places them on a map, and a third picks up HPD's latest news releases every hour.
+Using a combination of image cropping and OCR, we extract data about each arrest from every arrest log HPD publishes (four a day). A second scraper records HPD's active dispatch calls every 10 minutes and places them on a map, and a third picks up HPD's latest news releases and posts on X every hour.
 
 ### Full Breakdown
 
@@ -67,12 +67,15 @@ A third Railway cron service runs `npm run scrape-news` every hour ([jobs/scrape
 
 1. Reads HPD's 10 latest news releases from its website's WordPress API, with each release's photo when it has one, and turns the titles and excerpts into plain text ([fetchNewsReleases.js](services/news/fetchNewsReleases.js))
 2. Keeps the stored releases the same as HPD's latest: new ones are added, and ones HPD no longer lists (older, or taken down) are removed ([saveNewsReleases.js](services/news/saveNewsReleases.js))
+3. Reads [@honolulupolice](https://x.com/honolulupolice)'s 10 latest posts from X's API, when `X_BEARER_TOKEN` is set, and keeps them the same way, so a post deleted on X disappears here too ([fetchXPosts.js](services/news/fetchXPosts.js), [saveXPosts.js](services/news/saveXPosts.js)). X charges per post read, but only once per post per day, so hourly checks cost about the same as one a day (roughly $1.50–2 a month). Each post's text is shown in full, with its links, @mentions, and #hashtags as links, following X's display requirements
+
+HPD's website and X are checked separately, so a problem with one never stops the other.
 
 #### The website
 
 **Express** and **EJS** serve the site:
 
-- **Home:** statistics and charts for a chosen date range, counted by MongoDB, and HPD's latest news releases as cards linking to HPD's site
+- **Home:** statistics and charts for a chosen date range, counted by MongoDB, then HPD's latest news releases and posts on X as cards linking to HPD's site and X
 - **Arrests:** every arrest as a card, newest first, loading more as you scroll. Arrestee and officer names are only shown to logged-in users; accounts are invite-only (**Passport**, created with `npm run create-user`)
 - **Dispatches:** a **Leaflet** map and list of the calls HPD is handling now, plus counts by call type and district for the last 7 days
 
@@ -86,7 +89,7 @@ The site and the three scrapers are four services on Railway, all deployed from 
 | `npm start` | Runs the website (Railway's web service) |
 | `npm run scrape` | Imports new arrest logs (Railway cron, 15 minutes after each HPD log) |
 | `npm run scrape-dispatches` | Checks HPD's dispatch calls (Railway cron, every 10 minutes) |
-| `npm run scrape-news` | Checks HPD's latest news releases (Railway cron, every hour) |
+| `npm run scrape-news` | Checks HPD's latest news releases, and its X posts when `X_BEARER_TOKEN` is set (Railway cron, every hour) |
 | `npm run reparse` | Rebuilds every stored arrest with the current parser |
 | `npm run create-user -- --email you@example.com` | Creates an invite-only login and prints its password once (`--reset` for a new password) |
 | `npm run parse -- path/to/Arrest_Log.pdf` | Tries the parser on a downloaded PDF and saves the results as JSON next to it |
