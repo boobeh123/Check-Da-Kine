@@ -149,4 +149,5 @@ const parseArrestLog = async (pdfBuffer) => {
   }
 };
 
-module.exports = { parseArrestLog };
+// The cleanup rules are exported for the tests (test/arrestRecords.test.js)
+module.exports = { parseArrestLog, normalizeReleaseInfo, toSexLetter, findWarnings };
