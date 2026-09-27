@@ -4,12 +4,19 @@
 <body>
   <%- include('partials/header') %>
 
-  <main id="mainContent" class="pageMain pageWidth">
-    <section class="card">
-      <h1><%= title %></h1>
-      <p><%= message %></p>
-      <p><a href="/">Back to the home page</a></p>
+  <main id="mainContent" class="bandMain">
+    <section class="pageBand">
+      <div class="bandInner pageWidth">
+        <h1><%= title %></h1>
+      </div>
     </section>
+
+    <div class="bandContent pageWidth">
+      <section class="card">
+        <p><%= message %></p>
+        <p><a href="/">Back to the home page</a></p>
+      </section>
+    </div>
   </main>
 
   <%- include('partials/footer') %>
