@@ -1,0 +1,18 @@
+<%# One square per officer, colored by the group they arrested most. The legend carries the counts. %>
+<ul class="chartLegend">
+  <% officerGroups.forEach((group) => { %>
+    <li class="legendItem">
+      <span class="legendSwatch <%= group.colorClass %>"></span>
+      <span><%= group.label %></span>
+      <span class="legendCount"><%= group.count.toLocaleString('en-US') %></span>
+    </li>
+  <% }) %>
+</ul>
+
+<div class="officerUnits" aria-hidden="true">
+  <% officerGroups.forEach((group) => { %>
+    <% for (let unit = 0; unit < group.count; unit += 1) { %>
+      <span class="officerUnit <%= group.colorClass %>"></span>
+    <% } %>
+  <% }) %>
+</div>
