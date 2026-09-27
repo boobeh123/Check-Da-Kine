@@ -1,0 +1,4 @@
+<%# One-time confirmations set before a redirect (logged in, logged out) %>
+<% (locals.success ?? []).forEach((message) => { %>
+  <p class="flashMessage" role="status"><%= message %></p>
+<% }) %>
