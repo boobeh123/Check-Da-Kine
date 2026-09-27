@@ -10,7 +10,23 @@ Base
   --colorBackground: #f8fafc;
   --colorSurface: #ffffff;
   --colorBorder: #e2e8f0;
+  --colorInputBorder: #6b7280;
   --colorFocus: #1f2937;
+  --colorError: #b91c1c;
+  --colorErrorSurface: #fef2f2;
+
+  /* Charts. Single-series bars use the brand blue. The officer groups use a categorical
+     palette checked for colorblind separation; each group keeps its color in every range. */
+  --colorChartBar: var(--colorPrimary);
+  --colorChartBarHover: var(--colorPrimaryDark);
+  --colorGridline: #e1e0d9;
+  --colorSeriesPacificIslander: #2a78d6;
+  --colorSeriesWhite: #eb6834;
+  --colorSeriesAsian: #1baf7a;
+  --colorSeriesBlack: #eda100;
+  --colorSeriesHispanic: #e87ba4;
+  --colorSeriesNativeAmerican: #008300;
+  --colorSeriesOther: #898781;
 
   --fontBody: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --fontSizeSm: 0.875rem;
@@ -18,6 +34,8 @@ Base
   --fontSizeLg: 1.25rem;
   --fontSizeH2: 1.5rem;
   --fontSizeH1: 2rem;
+  --fontSizeStat: 1.75rem;
+  --fontSizeHero: 3rem;
   --lineHeightBody: 1.6;
   --lineHeightHeading: 1.2;
 
@@ -28,8 +46,17 @@ Base
 
   --contentWidth: 60rem;
   --radiusMd: 0.5rem;
+  --radiusPill: 999px;
+  --radiusBar: 4px;
+  --radiusUnit: 2px;
   --borderWidth: 1px;
   --focusWidth: 3px;
+
+  --barThickness: 1rem;
+  --columnWidth: 1.5rem;
+  --columnPlotHeight: 12rem;
+  --unitSize: 0.75rem;
+  --gapSurface: 2px;
 }
 
 *,
@@ -129,7 +156,7 @@ Components
 }
 
 .card {
-  padding: var(--spaceLg);
+  padding: var(--spaceMd);
   background-color: var(--colorSurface);
   border: var(--borderWidth) solid var(--colorBorder);
   border-radius: var(--radiusMd);
@@ -137,6 +164,255 @@ Components
 
 .card > :last-child {
   margin-bottom: 0;
+}
+
+.button {
+  padding: var(--spaceSm) var(--spaceMd);
+  font: inherit;
+  font-weight: 600;
+  color: var(--colorOnPrimary);
+  background-color: var(--colorPrimary);
+  border: 0;
+  border-radius: var(--radiusMd);
+  cursor: pointer;
+}
+
+.button:hover {
+  background-color: var(--colorPrimaryDark);
+}
+
+.formErrors {
+  margin-bottom: var(--spaceMd);
+  padding: var(--spaceMd);
+  color: var(--colorError);
+  background-color: var(--colorErrorSurface);
+  border: var(--borderWidth) solid var(--colorError);
+  border-radius: var(--radiusMd);
+}
+
+.formErrors > :last-child {
+  margin-bottom: 0;
+}
+
+/* Stat tiles: a label, a big number, and a note */
+.statRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: var(--spaceMd);
+  margin: 0;
+}
+
+.statTile {
+  padding: var(--spaceMd);
+  background-color: var(--colorSurface);
+  border: var(--borderWidth) solid var(--colorBorder);
+  border-radius: var(--radiusMd);
+}
+
+.statLabel {
+  font-size: var(--fontSizeSm);
+  color: var(--colorTextMuted);
+}
+
+.statValue {
+  margin: 0;
+  font-size: var(--fontSizeStat);
+  font-weight: 600;
+  line-height: var(--lineHeightHeading);
+}
+
+.statTileHero .statValue {
+  font-size: var(--fontSizeHero);
+}
+
+.statNote {
+  margin: 0;
+  font-size: var(--fontSizeSm);
+  color: var(--colorTextMuted);
+}
+
+/* Charts */
+.chartCaption,
+.chartCaveat {
+  color: var(--colorTextMuted);
+}
+
+.chartCaveat {
+  margin-top: var(--spaceMd);
+  font-size: var(--fontSizeSm);
+}
+
+/* Horizontal bars grow from a hairline baseline, with the value at the tip.
+   dashboardCharts.js sets --barShare (0–100) from each bar's data-share. */
+.barList {
+  display: grid;
+  gap: var(--spaceSm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Labels get at most 30% of the row (and never over 12rem), so bars keep room on phones */
+.barRow {
+  display: grid;
+  grid-template-columns: minmax(5rem, min(30%, 12rem)) 1fr;
+  gap: var(--spaceMd);
+  align-items: center;
+}
+
+.barLabel {
+  font-size: var(--fontSizeSm);
+  overflow-wrap: anywhere;
+}
+
+.barArea {
+  display: flex;
+  gap: var(--spaceSm);
+  align-items: center;
+  border-left: var(--borderWidth) solid var(--colorGridline);
+}
+
+/* The 4rem left over is room for the value label */
+.barFill {
+  flex: none;
+  width: calc((100% - 4rem) * var(--barShare, 0) / 100);
+  height: var(--barThickness);
+  background-color: var(--colorChartBar);
+  border-radius: 0 var(--radiusBar) var(--radiusBar) 0;
+}
+
+.barValue,
+.columnValue {
+  font-size: var(--fontSizeSm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Columns stand on a hairline baseline, with the value on top */
+.columnPlot {
+  display: flex;
+  gap: var(--spaceSm);
+  height: var(--columnPlotHeight);
+  border-bottom: var(--borderWidth) solid var(--colorGridline);
+}
+
+.columnItem {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--spaceXs);
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* The 1.75rem left over is room for the value above the tallest column */
+.columnBar {
+  width: min(100%, var(--columnWidth));
+  height: calc((100% - 1.75rem) * var(--barShare, 0) / 100);
+  background-color: var(--colorChartBar);
+  border-radius: var(--radiusBar) var(--radiusBar) 0 0;
+}
+
+.barFill:hover,
+.columnBar:hover {
+  background-color: var(--colorChartBarHover);
+}
+
+.columnAxis {
+  display: flex;
+  gap: var(--spaceSm);
+  padding-top: var(--spaceXs);
+}
+
+.columnLabel {
+  flex: 1;
+  font-size: var(--fontSizeSm);
+  color: var(--colorTextMuted);
+  text-align: center;
+}
+
+/* Legend: a color swatch beside plain text, so color is never the only label */
+.chartLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spaceSm) var(--spaceMd);
+  margin: 0 0 var(--spaceMd);
+  padding: 0;
+  font-size: var(--fontSizeSm);
+  list-style: none;
+}
+
+.legendItem {
+  display: flex;
+  gap: var(--spaceXs);
+  align-items: center;
+}
+
+.legendCount {
+  font-weight: 600;
+}
+
+.legendSwatch,
+.officerUnit {
+  width: var(--unitSize);
+  height: var(--unitSize);
+  border-radius: var(--radiusUnit);
+}
+
+.seriesPacificIslander {
+  background-color: var(--colorSeriesPacificIslander);
+}
+
+.seriesWhite {
+  background-color: var(--colorSeriesWhite);
+}
+
+.seriesAsian {
+  background-color: var(--colorSeriesAsian);
+}
+
+.seriesBlack {
+  background-color: var(--colorSeriesBlack);
+}
+
+.seriesHispanic {
+  background-color: var(--colorSeriesHispanic);
+}
+
+.seriesNativeAmerican {
+  background-color: var(--colorSeriesNativeAmerican);
+}
+
+.seriesOther {
+  background-color: var(--colorSeriesOther);
+}
+
+/* The table twin of each chart */
+.tableView {
+  margin-top: var(--spaceMd);
+  font-size: var(--fontSizeSm);
+}
+
+.tableView summary {
+  font-weight: 600;
+  color: var(--colorPrimary);
+  cursor: pointer;
+}
+
+.tableView table {
+  margin-top: var(--spaceSm);
+  border-collapse: collapse;
+}
+
+.tableView th,
+.tableView td {
+  padding: var(--spaceXs) var(--spaceMd);
+  text-align: left;
+  border-bottom: var(--borderWidth) solid var(--colorBorder);
+}
+
+.tableView td {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 
 /**************************************************************
@@ -216,9 +492,79 @@ Home
   color: var(--colorTextMuted);
 }
 
-.homeComingList {
+.homeUpdated {
+  font-size: var(--fontSizeSm);
+  color: var(--colorTextMuted);
+}
+
+/**************************************************************
+Date filter
+***************************************************************/
+.dateFilter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spaceMd);
+  align-items: flex-end;
+  margin-bottom: var(--spaceLg);
+}
+
+.presetList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spaceSm);
   margin: 0;
-  padding-left: var(--spaceLg);
+  padding: 0;
+  list-style: none;
+}
+
+.presetLink {
+  display: inline-block;
+  padding: var(--spaceXs) var(--spaceMd);
+  text-decoration: none;
+  background-color: var(--colorSurface);
+  border: var(--borderWidth) solid var(--colorInputBorder);
+  border-radius: var(--radiusPill);
+}
+
+.presetLink[aria-current='true'] {
+  font-weight: 600;
+  color: var(--colorOnPrimary);
+  background-color: var(--colorPrimary);
+  border-color: var(--colorPrimary);
+}
+
+.dateField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spaceXs);
+  font-size: var(--fontSizeSm);
+}
+
+.dateField input {
+  padding: var(--spaceXs) var(--spaceSm);
+  font: inherit;
+  border: var(--borderWidth) solid var(--colorInputBorder);
+  border-radius: var(--radiusMd);
+}
+
+/**************************************************************
+Dashboard
+***************************************************************/
+.summarySection,
+.chartCard {
+  margin-bottom: var(--spaceLg);
+}
+
+.dataNote {
+  margin: var(--spaceMd) 0 0;
+  font-size: var(--fontSizeSm);
+  color: var(--colorTextMuted);
+}
+
+.officerUnits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gapSurface);
 }
 
 /**************************************************************
@@ -251,6 +597,10 @@ Media queries
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+  }
+
+  .card {
+    padding: var(--spaceLg);
   }
 }
 
