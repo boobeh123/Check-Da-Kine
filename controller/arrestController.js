@@ -10,9 +10,13 @@ exports.getArrests = async (req, res) => {
   const { beforeTime, beforeId } = result.isEmpty() ? matchedData(req) : {};
   const cursor = beforeTime && beforeId ? { beforeTime, beforeId } : null;
 
-  // Names are for logged-in users only; req.user doesn't exist until login is added
+  // Names are for logged-in users only
   const showNames = Boolean(req.user);
   const feed = await listArrests({ cursor, showNames });
+
+  // A page with names must never be kept by a shared cache or shown from the back button
+  // after logging out
+  if (showNames) res.set('Cache-Control', 'private, no-store');
 
   res.status(errors.length > 0 ? 400 : 200).render('arrestsView', {
     title: 'Arrests',
