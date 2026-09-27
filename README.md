@@ -82,3 +82,4 @@ The site and the two scrapers are three services on Railway, all deployed from t
 | `npm run reparse` | Rebuilds every stored arrest with the current parser |
 | `npm run create-user -- --email you@example.com` | Creates an invite-only login and prints its password once (`--reset` for a new password) |
 | `npm run parse -- path/to/Arrest_Log.pdf` | Tries the parser on a downloaded PDF and saves the results as JSON next to it |
+| `npm test` | Runs the unit tests in `test/` with Node's built-in test runner. The OCR check re-reads the PDFs in `samplePdfs/` against the JSON saved beside them, and skips itself when that folder is missing |
