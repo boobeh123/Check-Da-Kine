@@ -1,0 +1,37 @@
+<%# "HPD on X": the latest posts, laid out as X's display requirements ask. The avatar sits
+    left of the name and @handle, the full, unaltered text below them, and the time links to
+    the post. xPosts: { posts, profileUrl }. %>
+<section class="xSection" aria-labelledby="xHeading">
+  <div class="sectionHeader">
+    <h2 id="xHeading">HPD on X</h2>
+    <a href="<%= xPosts.profileUrl %>">View @honolulupolice on X <span aria-hidden="true">→</span></a>
+  </div>
+
+  <ul class="xPostList">
+    <% xPosts.posts.forEach((post) => { %>
+      <li class="card xPost">
+        <div class="xPostHeader">
+          <% if (post.avatarUrl) { %>
+            <img class="xAvatar" src="<%= post.avatarUrl %>" alt="" width="40" height="40" loading="lazy">
+          <% } %>
+          <p class="xAuthor">
+            <span class="xName"><%= post.name %></span>
+            <span class="xHandle">@<%= post.username %></span>
+          </p>
+          <a class="xTime" href="<%= post.url %>"><time datetime="<%= post.postedIso %>"><%= post.postedAt %></time></a>
+        </div>
+        <%# On one line: the text keeps the post's own line breaks, so template spacing would show %>
+        <p class="xText"><% post.segments.forEach((segment) => { %><% if (segment.href) { %><a href="<%= segment.href %>"><%= segment.text %></a><% } else { %><%= segment.text %><% } %><% }) %></p>
+        <% if (post.media) { %>
+          <a class="xMedia" href="<%= post.url %>">
+            <img src="<%= post.media.url %>" alt="<%= post.media.alt %>" loading="lazy">
+            <span class="visuallyHidden">See the <%= post.media.isVideo ? 'video' : 'photo' %> on X</span>
+            <% if (post.media.isVideo || post.moreMediaCount > 0) { %>
+              <span class="xMediaBadge"><%= post.media.isVideo ? 'Video' : `+${post.moreMediaCount} more` %></span>
+            <% } %>
+          </a>
+        <% } %>
+      </li>
+    <% }) %>
+  </ul>
+</section>
