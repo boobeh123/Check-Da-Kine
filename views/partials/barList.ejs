@@ -1,0 +1,12 @@
+<%# Horizontal bars, largest first. rows: [{ label, count, share }] %>
+<ul class="barList" aria-hidden="true">
+  <% rows.forEach((row) => { %>
+    <li class="barRow">
+      <span class="barLabel"><%= row.label %></span>
+      <span class="barArea">
+        <span class="barFill" data-share="<%= row.share %>"></span>
+        <span class="barValue"><%= row.count.toLocaleString('en-US') %></span>
+      </span>
+    </li>
+  <% }) %>
+</ul>
