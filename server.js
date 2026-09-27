@@ -4,19 +4,27 @@ require('dotenv').config(); // First: load .env before anything reads process.en
 const express = require('express');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const session = require('express-session');
+const { MongoStore } = require('connect-mongo'); // v6+
+const passport = require('passport');
+const flash = require('connect-flash');
 const connectDB = require('./config/database');
 
-// No sessions, Passport, or flash messages: the site has no user accounts.
-// Add them from the standard template if an admin area is ever needed.
+// Sessions can't be signed without a secret; stop here rather than fail on the first login
+if (!process.env.SESSION_SECRET) {
+  throw new Error('SESSION_SECRET is not set. Add a long random string to .env (and to Railway).');
+}
 
-// Connect once; the server starts listening after the connection succeeds
+require('./config/passport')(passport);
+
+// Connect once; the session store reuses this connection
 const clientPromise = connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const isProduction = process.env.NODE_ENV === 'production';
 
-// 1. Trust Railway's proxy: required for req.ip and for knowing the connection is HTTPS
+// 1. Trust Railway's proxy: required for req.ip, rate limiting, and secure cookies
 app.set('trust proxy', 1);
 app.set('view engine', 'ejs');
 
@@ -39,20 +47,50 @@ app.use(morgan(isProduction ? 'combined' : 'dev'));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-// 5. Static files
+// 5. Static files: before sessions, so asset requests don't touch the session store
 app.use(express.static('public'));
 
-// 6. The current path, so the nav can mark the page you're on
+// 6. Sessions, stored in MongoDB. Guests don't get one until something is saved to it.
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({ clientPromise }),
+    cookie: {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: isProduction,
+    },
+  })
+);
+
+// 7. Passport: after sessions
+app.use(passport.initialize());
+app.use(passport.session());
+
+// 8. Flash messages, the logged-in user, and the current path for every view.
+// req.flash() writes an empty object into the session even when there's nothing to read,
+// which would store a session for every visitor and crawler, so only read what exists.
+const takeFlash = (req, type) => (req.session.flash?.[type] ? req.flash(type) : []);
+
+app.use(flash());
 app.use((req, res, next) => {
-  res.locals.currentPath = req.path;
+  res.locals.success = takeFlash(req, 'success');
+  res.locals.errors = takeFlash(req, 'errors');
+  res.locals.error = takeFlash(req, 'error');
+  res.locals.info = takeFlash(req, 'info');
+  res.locals.user = req.user;
+  res.locals.currentPath = req.path; // So the nav can mark the page you're on
   next();
 });
 
-// 7. Routes
+// 9. Routes
 app.use('/', require('./routes/indexRoutes'));
+app.use('/', require('./routes/authRoutes'));
 app.use('/arrests', require('./routes/arrestRoutes'));
 
-// 8. 404: after all routes
+// 10. 404: after all routes
 app.use((req, res) => {
   res.status(404).render('error', {
     title: 'Page not found',
@@ -60,7 +98,7 @@ app.use((req, res) => {
   });
 });
 
-// 9. Centralized error handler: must be last
+// 11. Centralized error handler: must be last
 app.use((err, req, res, next) => {
   console.error(err); // Full details go to the logs, never to the user
   if (res.headersSent) return next(err);
