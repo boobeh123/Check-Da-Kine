@@ -853,6 +853,7 @@ Dashboard
 
 /* A short accent bar under each section heading */
 .chartCard > h2::after,
+.sectionHeader > h2::after,
 .aboutData > h2::after {
   content: '';
   display: block;
@@ -883,6 +884,144 @@ Dashboard
   display: flex;
   flex-wrap: wrap;
   gap: var(--gapSurface);
+}
+
+/**************************************************************
+News
+***************************************************************/
+.newsSection {
+  margin-bottom: var(--spaceLg);
+}
+
+/* The heading, with a link to HPD's news page at the other end */
+.sectionHeader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spaceSm) var(--spaceMd);
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: var(--spaceMd);
+}
+
+.sectionHeader > h2 {
+  margin-bottom: 0;
+}
+
+/* Stacked on phones; the featured release beside the list on wide screens (see Media queries) */
+.newsLayout {
+  display: grid;
+  gap: var(--spaceMd);
+}
+
+/* Each card is one link: the title's link stretches over the whole card */
+.newsFeatured,
+.newsItem {
+  position: relative;
+}
+
+.newsTitle {
+  margin: 0 0 var(--spaceXs);
+  font-size: var(--fontSizeLg);
+  line-height: var(--lineHeightHeading);
+}
+
+.newsTitle a {
+  color: var(--colorText);
+  text-decoration: none;
+}
+
+.newsTitle a::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radiusLg);
+}
+
+.newsFeatured:hover .newsTitle a,
+.newsItem:hover .newsTitle a {
+  text-decoration: underline;
+}
+
+/* The focus ring goes around the whole card, not just the title */
+.newsTitle a:focus-visible {
+  outline: none;
+}
+
+.newsTitle a:focus-visible::after {
+  outline: var(--focusWidth) solid var(--colorFocus);
+  outline-offset: 2px;
+}
+
+.newsDate {
+  margin: 0 0 var(--spaceSm);
+  font-size: var(--fontSizeSm);
+  color: var(--colorTextMuted);
+}
+
+/* A release without a photo shows the page band's gradient and skyline */
+.newsPlaceholder {
+  background:
+    url('/img/bandSkyline.svg') right bottom / auto 70% no-repeat,
+    linear-gradient(160deg, var(--colorPrimary), var(--colorPrimaryDark));
+}
+
+/* The featured card's photo runs edge to edge, so the padding moves to the text below it */
+.card.newsFeatured {
+  padding: 0;
+}
+
+.newsImage {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: calc(var(--radiusLg) - var(--borderWidth)) calc(var(--radiusLg) - var(--borderWidth)) 0 0;
+}
+
+.newsBody {
+  padding: var(--spaceMd);
+}
+
+.newsBody > :last-child {
+  margin-bottom: 0;
+}
+
+.newsReadMore {
+  font-weight: 600;
+  color: var(--colorPrimary);
+}
+
+.newsList {
+  display: grid;
+  gap: var(--spaceMd);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card.newsItem {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  gap: var(--spaceMd);
+  align-items: center;
+  padding: var(--spaceSm);
+}
+
+.newsItem .newsTitle {
+  font-size: var(--fontSizeBase);
+  overflow-wrap: anywhere;
+}
+
+.newsItem .newsDate {
+  margin: 0;
+}
+
+.newsThumb {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radiusMd);
 }
 
 /**************************************************************
@@ -1224,6 +1363,10 @@ Media queries
     grid-column: auto;
   }
 
+  .newsBody {
+    padding: var(--spaceLg);
+  }
+
   .offenseField {
     grid-template-columns: 9rem 1fr;
     gap: var(--spaceSm);
@@ -1236,6 +1379,17 @@ Media queries
 
   .callMap {
     height: 26rem;
+  }
+}
+
+/* The featured release beside the list, which shares its height among the list's cards */
+@media (min-width: 56rem) {
+  .newsLayout {
+    grid-template-columns: 3fr 2fr;
+  }
+
+  .newsList {
+    grid-auto-rows: 1fr;
   }
 }
 
