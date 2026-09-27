@@ -24,9 +24,6 @@ The Attorney General's Office provides [annual reports](https://ag.hawaii.gov/cp
 
 ## How It Works
 Using a combination of image cropping and OCR, we extract data about each arrest from each daily published arrest log.<br />
-    * We use pdf.js with cron on a schedule to scrape data from the PDFs<br />
-    * We use sharp to take images of the PDFs & convert large images in common formats to smaller, web-friendly images<br />
-    * We use Tesseract.js for (OCR) Optical Character Recognition to extract data from the PDF-converted-image
 
 ### Full Breakdown
 
