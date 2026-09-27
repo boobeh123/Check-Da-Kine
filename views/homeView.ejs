@@ -4,100 +4,107 @@
 <body>
   <%- include('partials/header') %>
 
-  <main id="mainContent" class="pageMain pageWidth">
-    <%- include('partials/flashMessages') %>
-
-    <section class="homeIntro">
-      <h1>Honolulu Police Department arrest statistics</h1>
-      <p class="homeLead">Check Da Kine turns the Honolulu Police Department's published arrest logs into statistics anyone can explore.</p>
-      <p>HPD publishes a new arrest log as a PDF about every six hours. We read each one, pull out every arrest, and keep a single de-duplicated record of each, so the numbers can be checked against the Attorney General's <a href="https://ag.hawaii.gov/cpja/rs/cih/">annual crime reports</a>.</p>
-      <% if (lastUpdated) { %>
-        <p class="homeUpdated">Last updated <%= lastUpdated %>. All dates and times are Hawaii time.</p>
-      <% } %>
+  <main id="mainContent" class="homeMain">
+    <%# The hero band runs edge to edge; its contents stay within the page width %>
+    <section class="homeHero">
+      <div class="heroInner pageWidth">
+        <%- include('partials/flashMessages') %>
+        <h1>Honolulu Police Department arrest statistics</h1>
+        <p class="heroLead">Check Da Kine turns the Honolulu Police Department's published arrest logs into statistics anyone can explore.</p>
+        <% if (lastUpdated) { %>
+          <p class="heroUpdated">Last updated <%= lastUpdated %>. All dates and times are Hawaii time.</p>
+        <% } %>
+        <%- include('partials/dateFilter') %>
+      </div>
     </section>
 
-    <%- include('partials/dateFilter') %>
-
-    <% if (totals.arrests === 0) { %>
-      <section class="card emptyState">
-        <h2>No arrests in this date range</h2>
-        <% if (span) { %>
-          <p>Arrests on record run from <%= span.label %>. Try a range that overlaps those dates.</p>
-        <% } else { %>
-          <p>No arrest logs have been imported yet.</p>
-        <% } %>
-      </section>
-    <% } else { %>
-      <section class="summarySection">
-        <h2 class="visuallyHidden">Summary for <%= range.label %></h2>
-        <dl class="statRow">
-          <div class="statTile statTileHero">
-            <dt class="statLabel">Arrests</dt>
-            <dd class="statValue"><%= totals.arrests.toLocaleString('en-US') %></dd>
-            <dd class="statNote"><%= range.label %> (<%= range.days %> <%= range.days === 1 ? 'day' : 'days' %>)</dd>
-          </div>
-          <div class="statTile">
-            <dt class="statLabel">Median age</dt>
-            <dd class="statValue"><%= totals.medianAge ?? '—' %></dd>
-            <dd class="statNote">Average <%= totals.averageAge ?? '—' %></dd>
-          </div>
-          <div class="statTile">
-            <dt class="statLabel">Men</dt>
-            <dd class="statValue"><%= totals.menShare %>%</dd>
-            <dd class="statNote"><%= totals.men.toLocaleString('en-US') %> arrests</dd>
-          </div>
-          <div class="statTile">
-            <dt class="statLabel">Women</dt>
-            <dd class="statValue"><%= totals.womenShare %>%</dd>
-            <dd class="statNote"><%= totals.women.toLocaleString('en-US') %> arrests</dd>
-          </div>
-        </dl>
-        <% if (totals.flagged > 0) { %>
-          <p class="dataNote"><%= totals.flagged.toLocaleString('en-US') %> of these arrests have a field that OCR couldn't read cleanly. They're still counted wherever the field was readable.</p>
-        <% } %>
-      </section>
-
-      <section class="card chartCard">
-        <h2>Arrests by age</h2>
-        <p class="chartCaption">
-          Age at the time of arrest.
-          <% if (totals.unknownAge > 0) { %>
-            <%= totals.unknownAge.toLocaleString('en-US') %> <%= totals.unknownAge === 1 ? "arrest with an unreadable age isn't" : "arrests with an unreadable age aren't" %> shown.
+    <div class="homeContent pageWidth">
+      <% if (totals.arrests === 0) { %>
+        <section class="card emptyState">
+          <h2>No arrests in this date range</h2>
+          <% if (span) { %>
+            <p>Arrests on record run from <%= span.label %>. Try a range that overlaps those dates.</p>
+          <% } else { %>
+            <p>No arrest logs have been imported yet.</p>
           <% } %>
-        </p>
-        <%- include('partials/columnChart', { rows: ageBands }) %>
-        <%- include('partials/tableView', {
-          caption: 'Arrests by age',
-          columns: ['Age', 'Arrests'],
-          rows: ageBands.map((band) => [band.label, band.count.toLocaleString('en-US')]),
-        }) %>
-      </section>
+        </section>
+      <% } else { %>
+        <section class="summarySection">
+          <h2 class="visuallyHidden">Summary for <%= range.label %></h2>
+          <dl class="statRow">
+            <div class="statTile statTileHero">
+              <dt class="statLabel">Arrests</dt>
+              <dd class="statValue"><%= totals.arrests.toLocaleString('en-US') %></dd>
+              <dd class="statNote"><%= range.label %> (<%= range.days %> <%= range.days === 1 ? 'day' : 'days' %>)</dd>
+            </div>
+            <div class="statTile">
+              <dt class="statLabel">Median age</dt>
+              <dd class="statValue"><%= totals.medianAge ?? '—' %></dd>
+              <dd class="statNote">Average <%= totals.averageAge ?? '—' %></dd>
+            </div>
+            <div class="statTile">
+              <dt class="statLabel">Men</dt>
+              <dd class="statValue"><%= totals.menShare %>%</dd>
+              <dd class="statNote"><%= totals.men.toLocaleString('en-US') %> arrests</dd>
+            </div>
+            <div class="statTile">
+              <dt class="statLabel">Women</dt>
+              <dd class="statValue"><%= totals.womenShare %>%</dd>
+              <dd class="statNote"><%= totals.women.toLocaleString('en-US') %> arrests</dd>
+            </div>
+          </dl>
+          <% if (totals.flagged > 0) { %>
+            <p class="dataNote"><%= totals.flagged.toLocaleString('en-US') %> of these arrests have a field that OCR couldn't read cleanly. They're still counted wherever the field was readable.</p>
+          <% } %>
+        </section>
 
-      <section class="card chartCard">
-        <h2>Arrests by ethnicity</h2>
-        <p class="chartCaption">Ethnicities as HPD prints them. An arrest listing more than one ethnicity counts toward each.</p>
-        <%- include('partials/barList', { rows: ethnicities }) %>
-        <%- include('partials/tableView', {
-          caption: 'Arrests by ethnicity',
-          columns: ['Ethnicity', 'Arrests'],
-          rows: ethnicities.map((row) => [row.label, row.count.toLocaleString('en-US')]),
-        }) %>
-      </section>
+        <section class="card chartCard">
+          <h2>Arrests by age</h2>
+          <p class="chartCaption">
+            Age at the time of arrest.
+            <% if (totals.unknownAge > 0) { %>
+              <%= totals.unknownAge.toLocaleString('en-US') %> <%= totals.unknownAge === 1 ? "arrest with an unreadable age isn't" : "arrests with an unreadable age aren't" %> shown.
+            <% } %>
+          </p>
+          <%- include('partials/columnChart', { rows: ageBands }) %>
+          <%- include('partials/tableView', {
+            caption: 'Arrests by age',
+            columns: ['Age', 'Arrests'],
+            rows: ageBands.map((band) => [band.label, band.count.toLocaleString('en-US')]),
+          }) %>
+        </section>
 
-      <section class="card chartCard">
-        <h2>Officers by the group they arrested most</h2>
-        <p class="chartCaption">
-          Each square is one of the <%= officerCount.toLocaleString('en-US') %> officers who made an arrest in this range, colored by the ethnic group they arrested most. Officers are anonymous in this chart.
-        </p>
-        <%- include('partials/officerUnits') %>
-        <p class="chartCaveat">Read this with care. An officer's most-arrested group mostly reflects where they patrol, and an officer with one or two arrests gets a color from very little data. Officer names come from OCR, so a misread name can split one officer into two.</p>
-        <%- include('partials/tableView', {
-          caption: 'Officers by the group they arrested most',
-          columns: ['Group arrested most', 'Officers'],
-          rows: officerGroups.map((group) => [group.label, group.count.toLocaleString('en-US')]),
-        }) %>
+        <section class="card chartCard">
+          <h2>Arrests by ethnicity</h2>
+          <p class="chartCaption">Ethnicities as HPD prints them. An arrest listing more than one ethnicity counts toward each.</p>
+          <%- include('partials/barList', { rows: ethnicities }) %>
+          <%- include('partials/tableView', {
+            caption: 'Arrests by ethnicity',
+            columns: ['Ethnicity', 'Arrests'],
+            rows: ethnicities.map((row) => [row.label, row.count.toLocaleString('en-US')]),
+          }) %>
+        </section>
+
+        <section class="card chartCard">
+          <h2>Officers by the group they arrested most</h2>
+          <p class="chartCaption">
+            Each square is one of the <%= officerCount.toLocaleString('en-US') %> officers who made an arrest in this range, colored by the ethnic group they arrested most. Officers are anonymous in this chart.
+          </p>
+          <%- include('partials/officerUnits') %>
+          <p class="chartCaveat">Read this with care. An officer's most-arrested group mostly reflects where they patrol, and an officer with one or two arrests gets a color from very little data. Officer names come from OCR, so a misread name can split one officer into two.</p>
+          <%- include('partials/tableView', {
+            caption: 'Officers by the group they arrested most',
+            columns: ['Group arrested most', 'Officers'],
+            rows: officerGroups.map((group) => [group.label, group.count.toLocaleString('en-US')]),
+          }) %>
+        </section>
+      <% } %>
+
+      <section class="aboutData">
+        <h2>About this data</h2>
+        <p>HPD publishes a new arrest log as a PDF about every six hours. We read each one, pull out every arrest, and keep a single de-duplicated record of each, so the numbers can be checked against the Attorney General's <a href="https://ag.hawaii.gov/cpja/rs/cih/">annual crime reports</a>.</p>
       </section>
-    <% } %>
+    </div>
   </main>
 
   <%- include('partials/footer') %>
