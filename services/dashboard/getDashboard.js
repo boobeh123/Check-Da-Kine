@@ -5,6 +5,7 @@ const ArrestLog = require('../../model/ArrestLog');
 const ArrestRecord = require('../../model/ArrestRecord');
 const { withShares, toTopRows } = require('../chartRows');
 const { findStaleness } = require('../staleness');
+const { toArrestTrend } = require('./arrestTrend');
 const { ethnicityGroups, toEthnicityGroup } = require('./ethnicityGroups');
 const {
   toHawaiiDay,
@@ -111,6 +112,14 @@ const getArrestStats = async (from, until) => {
     {
       $facet: {
         bySex: [{ $group: { _id: '$sex', count: { $sum: 1 } } }],
+        byDay: [
+          {
+            $group: {
+              _id: { $dateToString: { format: '%Y-%m-%d', date: '$arrestedAt', timezone: 'Pacific/Honolulu' } },
+              count: { $sum: 1 },
+            },
+          },
+        ],
         byAge: [{ $match: { age: { $type: 'number' } } }, { $group: { _id: '$age', count: { $sum: 1 } } }],
         byEthnicity: [{ $unwind: '$ethnicities' }, { $group: { _id: '$ethnicities', count: { $sum: 1 } } }],
         // The first offense's officer is the arresting officer, as HPD Stats counted it
@@ -148,7 +157,17 @@ const getArrestStats = async (from, until) => {
     ethnicities: toTopRows(facets.byEthnicity, shownEthnicities),
     officerGroups,
     officerCount: officerGroups.reduce((sum, group) => sum + group.count, 0),
+    dayCounts: facets.byDay,
   };
+};
+
+// The chart in the Arrests tile covers only days we have data for: none before the first
+// arrest on record (they'd read as days with no arrests), and none after today
+const buildTrend = (dayCounts, range, span, today) => {
+  if (!span) return null;
+  const start = range.start > span.firstDay ? range.start : span.firstDay;
+  const end = range.end < today ? range.end : today;
+  return start <= end ? toArrestTrend(dayCounts, start, end, today) : null;
 };
 
 // First and last days with arrests, or null before the first import
@@ -191,7 +210,7 @@ const getDashboard = async ({ start, end }) => {
   const rangeEnd = end ?? today;
 
   // The end day counts in full, so the range runs until the start of the next day
-  const stats = await getArrestStats(startOfHawaiiDay(rangeStart), startOfHawaiiDay(addDays(rangeEnd, 1)));
+  const { dayCounts, ...stats } = await getArrestStats(startOfHawaiiDay(rangeStart), startOfHawaiiDay(addDays(rangeEnd, 1)));
 
   return {
     range: {
@@ -205,6 +224,7 @@ const getDashboard = async ({ start, end }) => {
     today,
     lastUpdated: lastLog ? formatDateTime(lastLog.publishedAt) : null,
     stale: lastLog ? findStaleness(lastLog.publishedAt, staleAfterHours) : null,
+    trend: buildTrend(dayCounts, { start: rangeStart, end: rangeEnd }, span, today),
     ...stats,
   };
 };
