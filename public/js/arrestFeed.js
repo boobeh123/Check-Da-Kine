@@ -26,7 +26,7 @@ const showCount = (end) => {
 const showEndOfFeed = () => {
   const endMessage = document.createElement('p');
   endMessage.className = 'feedEnd';
-  endMessage.textContent = "That's every arrest on record.";
+  endMessage.textContent = feedStatus.dataset.endMessage; // Worded for the search, if there is one
   loadMoreLink.replaceWith(endMessage);
 };
 
