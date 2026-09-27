@@ -14,6 +14,9 @@ Base
   --colorFocus: #1f2937;
   --colorError: #b91c1c;
   --colorErrorSurface: #fef2f2;
+  --colorWarning: #d97706;
+  --colorWarningText: #92400e; /* 6.4:1 on the warning surface */
+  --colorWarningSurface: #fef3c7;
 
   /* Hero band text and outlines, checked for contrast against the brand blue */
   --colorOnPrimaryMuted: #d7e5f2;
@@ -286,6 +289,17 @@ Components
   background-color: var(--colorSurface);
   border: var(--borderWidth) solid var(--colorBorder);
   border-left: var(--focusWidth) solid var(--colorPrimary);
+  border-radius: var(--radiusMd);
+}
+
+/* Data that should have been refreshed by now. It can sit on the blue hero, too. */
+.staleNotice {
+  margin-bottom: var(--spaceMd);
+  padding: var(--spaceSm) var(--spaceMd);
+  color: var(--colorWarningText);
+  background-color: var(--colorWarningSurface);
+  border: var(--borderWidth) solid var(--colorWarning);
+  border-left: var(--focusWidth) solid var(--colorWarning);
   border-radius: var(--radiusMd);
 }
 
