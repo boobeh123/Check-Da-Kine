@@ -11,6 +11,11 @@
       <% if (lastUpdated) { %>
         <p class="dispatchUpdated">HPD last updated its list <%= lastUpdated %>. Addresses are shown as HPD masks them.</p>
       <% } %>
+      <% if (stale) { %>
+        <%- include('partials/staleNotice', {
+          message: `HPD's list hasn't changed since ${lastUpdated} (${stale.ago}). Either HPD has stopped updating it, or our checks have stopped, so some of these calls may already be closed.`,
+        }) %>
+      <% } %>
     </section>
 
     <% if (!lastUpdated) { %>
