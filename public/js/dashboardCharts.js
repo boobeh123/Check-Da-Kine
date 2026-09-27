@@ -5,17 +5,20 @@
 /**************************************************************
 DOM selectors
 ***************************************************************/
-const charts = document.querySelectorAll('.barList, .columnChart');
+const charts = document.querySelectorAll('.barList, .columnChart, .trendBars');
 
 /**************************************************************
 Helpers
 ***************************************************************/
 const barStagger = 40; // ms between one bar starting to grow and the next
+const maxCascade = 400; // ms from the first bar starting to the last, however many bars
 
 // styles.css turns the change of size into growth
 const sizeBars = (chart) => {
-  chart.querySelectorAll('[data-share]').forEach((bar, index) => {
-    bar.style.transitionDelay = `${index * barStagger}ms`;
+  const bars = chart.querySelectorAll('[data-share]');
+  const stagger = Math.min(barStagger, maxCascade / bars.length);
+  bars.forEach((bar, index) => {
+    bar.style.transitionDelay = `${Math.round(index * stagger)}ms`;
     bar.style.setProperty('--barShare', bar.dataset.share);
   });
 };
