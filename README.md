@@ -38,6 +38,7 @@ Using a combination of image cropping and OCR, we extract data about each arrest
 * De-duplicated arrests across overlapping logs, with every PDF archived to Cloudinary
 * Arrest cards with infinite scroll that still works without JavaScript
 * Arrest search by charge, statute, location, or report number (MongoDB text index)
+* Arrest filters by charge & sex, plus arresting officer for logged-in users
 * Arrestee & officer names shown only to logged-in users
 * Date range filter with Last 7 days, Last 30 days & All time presets
 * Arrests-over-time chart with hover tooltips, grouped by day, week, or month
@@ -103,7 +104,7 @@ HPD's website and X are checked separately, so a problem with one never stops th
 **Express** and **EJS** serve the site:
 
 - **Home:** arrest statistics for a chosen date range, counted by MongoDB, with a chart of arrests over time in the Arrests tile. Below them, HPD's latest news releases and posts on X as cards linking to HPD's site and X, then charts by age, ethnicity, and officer. A notice appears if no new arrest log has arrived in 8 hours
-- **Arrests:** every arrest as a card, newest first, loading more as you scroll, and searchable by charge, statute, location, or report number (a MongoDB text index; names aren't searchable). Arrestee and officer names are only shown to logged-in users; accounts are invite-only (**Passport**, created with `npm run create-user`)
+- **Arrests:** every arrest as a card, newest first, loading more as you scroll, and searchable by charge, statute, location, or report number (a MongoDB text index; names aren't searchable). Dropdowns filter by charge and sex, and logged-in users can also filter by arresting officer; OCR variants of a name are merged into one choice, and the officer filter is ignored on the server for guests, so an officer can't be tied to arrests without logging in ([filterOptions.js](services/arrests/filterOptions.js)). Arrestee and officer names are only shown to logged-in users; accounts are invite-only (**Passport**, created with `npm run create-user`)
 - **Dispatches:** a **Leaflet** map and list of the calls HPD is handling now, linked so that pointing at a call in either one highlights it in the other, plus counts by call type and district for the last 7 days. A notice appears if HPD's list hasn't changed in an hour
 
 #### Running it
