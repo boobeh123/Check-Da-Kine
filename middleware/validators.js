@@ -21,8 +21,8 @@ exports.validateDateRange = [
 
 const brokenLinkMessage = 'That link to more arrests is broken.';
 
-// The Arrests page: an optional search, and the "load more" link's position in the feed,
-// which carries the last card's time and id (both or neither)
+// The Arrests page: an optional search and filters, and the "load more" link's position in
+// the feed, which carries the last card's time and id (both or neither)
 exports.validateArrestsPage = [
   query('beforeTime')
     .optional({ values: 'falsy' })
@@ -40,6 +40,12 @@ exports.validateArrestsPage = [
     .trim()
     .isLength({ max: 100 })
     .withMessage('Keep the search to 100 characters or fewer.'),
+  // The filter dropdowns. A charge or officer that isn't on record simply matches nothing
+  // (filterOptions.js), so these only check the shape. The message given with each field
+  // covers every check on it.
+  query('charge', 'Choose a charge from the list.').optional({ values: 'falsy' }).isString().trim().isLength({ max: 200 }),
+  query('sex', 'Choose Male or Female.').optional({ values: 'falsy' }).isString().isIn(['M', 'F']),
+  query('officer', 'Choose an officer from the list.').optional({ values: 'falsy' }).isString().trim().isLength({ max: 200 }),
 ];
 
 // Passport reads req.body itself, so the sanitizers here update the email it sees.
