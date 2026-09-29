@@ -60,9 +60,11 @@ const toCard = (record, showNames) => ({
   warnings: record.warnings ?? [],
 });
 
-// Links keep the search, so "Load more" and "Back to the newest" stay within the results
-const toHref = (search, record) => {
-  const params = new URLSearchParams(search ? { q: search } : {});
+// Links keep the search and filters, so "Load more" and "Back to the newest" stay within
+// the results
+const toHref = ({ search, charge, sex, officer }, record) => {
+  const chosen = Object.entries({ q: search, charge, sex, officer }).filter(([, value]) => value);
+  const params = new URLSearchParams(chosen);
   if (record) {
     params.set('beforeTime', record.arrestedAt.toISOString());
     params.set('beforeId', String(record._id));
@@ -71,16 +73,30 @@ const toHref = (search, record) => {
   return query ? `/arrests?${query}` : '/arrests';
 };
 
-// Only arrests whose charges contain every search word. $text is an operator we write here,
-// not one taken from the request, so it's marked trusted for sanitizeFilter.
-const matchingSearch = (words) =>
-  words.length > 0 ? { $text: mongoose.trusted({ $search: toTextSearch(words) }) } : {};
+// The arrests matching the search and filters. Every operator here is written by us, not
+// taken from the request, so each is marked trusted for sanitizeFilter. The chosen charge and
+// officer must be on the same charge: "THEFT 4" by officer X means X made that THEFT 4 arrest.
+// Variants come from the database (filterOptions.js), never from the request.
+const buildFilter = ({ search = '', sex = '', chargeVariants = null, officerVariants = null }) => {
+  const words = toSearchWords(search);
+  const sameCharge = {
+    ...(chargeVariants && { offenseName: mongoose.trusted({ $in: chargeVariants }) }),
+    ...(officerVariants && { officer: mongoose.trusted({ $in: officerVariants }) }),
+  };
+
+  return {
+    ...(words.length > 0 && { $text: mongoose.trusted({ $search: toTextSearch(words) }) }),
+    ...(sex && { sex }),
+    ...(Object.keys(sameCharge).length > 0 && { offenses: mongoose.trusted({ $elemMatch: sameCharge }) }),
+  };
+};
 
 // cursor: { beforeTime, beforeId } from the validated query, or null for the newest page.
-// search: what was typed in the search box, or '' for every arrest.
-const listArrests = async ({ cursor, showNames, search = '' }) => {
-  const searchFilter = matchingSearch(toSearchWords(search));
-  const filter = { ...searchFilter, ...olderThan(cursor) };
+// filters: { search, charge, sex, officer, chargeVariants, officerVariants } from
+// resolveFilters (filterOptions.js); empty for every arrest.
+const listArrests = async ({ cursor, showNames, filters = {} }) => {
+  const matching = buildFilter(filters);
+  const filter = { ...matching, ...olderThan(cursor) };
 
   const [records, total, olderCount] = await Promise.all([
     ArrestRecord.find(filter)
@@ -89,7 +105,7 @@ const listArrests = async ({ cursor, showNames, search = '' }) => {
       .select(showNames ? '+name' : '-offenses.officer')
       .populate('lastSeenIn', 'publishedAt pdfUrl sourceUrl')
       .lean(),
-    ArrestRecord.countDocuments(searchFilter),
+    ArrestRecord.countDocuments(matching),
     ArrestRecord.countDocuments(filter),
   ]);
 
@@ -102,9 +118,9 @@ const listArrests = async ({ cursor, showNames, search = '' }) => {
     start,
     end: start + pageRecords.length - 1,
     isFirstPage: !cursor,
-    firstPageHref: toHref(search),
-    nextHref: records.length > pageSize ? toHref(search, pageRecords[pageRecords.length - 1]) : null,
+    firstPageHref: toHref(filters),
+    nextHref: records.length > pageSize ? toHref(filters, pageRecords[pageRecords.length - 1]) : null,
   };
 };
 
-module.exports = { listArrests };
+module.exports = { listArrests, buildFilter, toHref };
