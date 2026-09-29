@@ -64,6 +64,24 @@ describe('validateArrestsPage', () => {
   it('rejects a search that arrives as an object, like q[$ne]=', async () => {
     assert.equal((await check(validateArrestsPage, { query: { q: { $ne: 'x' } } })).messages.length, 1);
   });
+
+  it('accepts the filters, trimming the charge and officer', async () => {
+    const { messages, req } = await check(validateArrestsPage, { query: { charge: ' THEFT 4 ', sex: 'F', officer: ' DOE, J ' } });
+    assert.deepEqual(messages, []);
+    const { charge, sex, officer } = matchedData(req);
+    assert.deepEqual({ charge, sex, officer }, { charge: 'THEFT 4', sex: 'F', officer: 'DOE, J' });
+  });
+
+  it('rejects a sex other than M or F, and filters that are too long or not text', async () => {
+    assert.deepEqual((await check(validateArrestsPage, { query: { sex: 'X' } })).messages, ['Choose Male or Female.']);
+    assert.deepEqual((await check(validateArrestsPage, { query: { sex: ['M', 'F'] } })).messages, ['Choose Male or Female.']);
+    assert.deepEqual((await check(validateArrestsPage, { query: { charge: 'A'.repeat(201) } })).messages, [
+      'Choose a charge from the list.',
+    ]);
+    assert.deepEqual((await check(validateArrestsPage, { query: { officer: { $ne: 'x' } } })).messages, [
+      'Choose an officer from the list.',
+    ]);
+  });
 });
 
 describe('validateLogin', () => {
