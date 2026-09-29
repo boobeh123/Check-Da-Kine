@@ -1149,6 +1149,37 @@ Arrests
   color: var(--colorTextMuted);
 }
 
+/* The filter dropdowns under the search box: stacked on phones, side by side on wider
+   screens (see Media queries) */
+.filterRow {
+  display: grid;
+  gap: var(--spaceSm) var(--spaceMd);
+  margin-top: var(--spaceMd);
+}
+
+.filterField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spaceXs);
+  min-width: 0;
+}
+
+.arrestSearch .filterField label {
+  margin-bottom: 0;
+}
+
+/* Styled like the search box; a long charge name is cut off in the closed box, not the list */
+.filterField select {
+  width: 100%;
+  min-width: 0;
+  padding: var(--spaceSm);
+  font: inherit;
+  color: var(--colorText);
+  background-color: var(--colorSurface);
+  border: var(--borderWidth) solid var(--colorInputBorder);
+  border-radius: var(--radiusMd);
+}
+
 .searchSummary {
   margin-bottom: var(--spaceMd);
   font-weight: 600;
@@ -1458,6 +1489,15 @@ Media queries
 
   .xPostList {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Charge gets the most room; logged-in users also get the officer list */
+  .filterRow {
+    grid-template-columns: 2fr 1fr;
+  }
+
+  .filterRowWide {
+    grid-template-columns: 2fr 1fr 2fr;
   }
 
   .offenseField {
