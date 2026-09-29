@@ -4,6 +4,7 @@
 const ArrestLog = require('../../model/ArrestLog');
 const ArrestRecord = require('../../model/ArrestRecord');
 const { withShares, toTopRows } = require('../chartRows');
+const { normalizeOfficer } = require('../arrests/normalizeNames');
 const { findStaleness } = require('../staleness');
 const { toArrestTrend } = require('./arrestTrend');
 const { ethnicityGroups, toEthnicityGroup } = require('./ethnicityGroups');
@@ -65,15 +66,6 @@ const toAgeBands = (ageCounts) =>
         .reduce((sum, row) => sum + row.count, 0),
     }))
   );
-
-// OCR leaves stray characters where a long name was cut off ("HOOPILIKEAN!"), so drop
-// trailing non-letters to let those variants count as one officer
-const normalizeOfficer = (name) =>
-  (name ?? '')
-    .toUpperCase()
-    .replace(/[^A-Z]+$/, '') // trailing characters that aren't letters
-    .replace(/\s+/g, ' ') // runs of spaces
-    .trim();
 
 // rows: [{ _id: { officer, ethnicity }, count }] -> officers per group, by the group each
 // officer arrested most. Ties go to the group listed first in ethnicityGroups.
