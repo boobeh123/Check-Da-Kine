@@ -1185,6 +1185,15 @@ Arrests
   font-weight: 600;
 }
 
+/* Dimmed while arrestFeed.js loads the results for a changed filter */
+.arrestResults {
+  transition: opacity var(--revealDuration) var(--easeOut);
+}
+
+.arrestResults[aria-busy='true'] {
+  opacity: 0.5;
+}
+
 .arrestFeed {
   display: grid;
   gap: var(--spaceMd);
