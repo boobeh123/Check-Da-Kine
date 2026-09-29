@@ -56,7 +56,7 @@ Using a combination of image cropping and OCR, we extract data about each arrest
 
 This follows the approach Tyliec designed for HPD Stats, rebuilt in JavaScript.
 
-HPD publishes a new arrest log about every six hours (around 5 AM, 11 AM, 5 PM, and 11 PM Hawaii time). Fifteen minutes after each one, a Railway cron service runs the scraper (`npm run scrape`, [jobs/scrapeArrestLogs.js](jobs/scrapeArrestLogs.js)). It does the following:
+HPD publishes a new arrest log about every six hours (around 5 AM, 11 AM, 5 PM, and 11 PM Hawaii time). Each file goes up about 10 minutes after the time in its name, and HPD's listing page is cached for up to 10 minutes more, so a Railway cron service runs the scraper every hour at 40 past (`npm run scrape`, [jobs/scrapeArrestLogs.js](jobs/scrapeArrestLogs.js)). That picks up each log about half an hour after it appears, and a late one within the hour; a run with nothing new just reads HPD's list and exits. It does the following:
 
 1. Loads [HPD's arrest log page](https://www.honolulupd.org/information/arrest-logs/) with `fetch` and finds every link to an arrest log PDF with **cheerio**. HPD lists about two weeks of logs; any we haven't parsed yet are imported, oldest first ([fetchArrestLogs.js](services/arrestLog/fetchArrestLogs.js))
 2. Downloads each new PDF into memory (nothing is written to disk) and uploads a copy to **Cloudinary** for archiving, since HPD removes old logs ([archivePdf.js](services/arrestLog/archivePdf.js))
@@ -114,7 +114,7 @@ The site and the three scrapers are four services on Railway, all deployed from 
 |---|---|
 | `npm run dev` | Runs the website locally, restarting when a file changes |
 | `npm start` | Runs the website (Railway's web service) |
-| `npm run scrape` | Imports new arrest logs (Railway cron, 15 minutes after each HPD log) |
+| `npm run scrape` | Imports new arrest logs (Railway cron, every hour at 40 past) |
 | `npm run scrape-dispatches` | Checks HPD's dispatch calls (Railway cron, every 10 minutes) |
 | `npm run scrape-news` | Checks HPD's latest news releases, and its X posts when `X_BEARER_TOKEN` is set (Railway cron, every hour) |
 | `npm run reparse` | Rebuilds every stored arrest with the current parser |
