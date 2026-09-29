@@ -56,59 +56,68 @@
             </div>
           <% } %>
         </div>
+
+        <%# arrestFeed.js applies a dropdown as soon as it changes: it shows this hint, and says
+            each new result count in the hidden status line, which stays put so screen readers
+            hear it %>
+        <p class="searchHint" id="filterHint" hidden>Results update as you choose a filter.</p>
+        <p class="visuallyHidden" id="filterStatus" role="status"></p>
       </form>
 
-      <% const anyFilter = activeFilters.length > 0; %>
-      <% if (anyFilter) { %>
-        <p class="searchSummary">
-          <%= total.toLocaleString('en-US') %> <%= total === 1 ? 'arrest matches' : 'arrests match' %>: <%= activeFilters.join(' · ') %>.
-          <a href="/arrests">Clear all</a>
-        </p>
-      <% } %>
-
-      <% if (errors.length > 0) { %>
-        <div class="formErrors" role="alert">
-          <p>That didn't work, so the newest arrests are shown instead:</p>
-          <ul>
-            <% errors.forEach((error) => { %>
-              <li><%= error %></li>
-            <% }) %>
-          </ul>
-        </div>
-      <% } %>
-
-      <% if (!isFirstPage) { %>
-        <p><a href="<%= firstPageHref %>">Back to the newest <%= anyFilter ? 'matches' : 'arrests' %></a></p>
-      <% } %>
-
-      <% if (cards.length === 0 && anyFilter) { %>
-        <section class="card emptyState">
-          <h2>No arrests match these filters</h2>
-          <p>Every filter has to match, and search looks for whole words. Try removing a filter, fewer words, or a different spelling.</p>
-        </section>
-      <% } else if (cards.length === 0) { %>
-        <section class="card emptyState">
-          <h2>No arrests yet</h2>
-          <p>No arrest logs have been imported yet.</p>
-        </section>
-      <% } else { %>
-        <div class="arrestFeed">
-          <% cards.forEach((card) => { %>
-            <%- include('partials/arrestCard', { card }) %>
-          <% }) %>
-        </div>
-
-        <% const endMessage = anyFilter ? "That's every matching arrest." : "That's every arrest on record."; %>
-        <p class="feedStatus" role="status" data-start="<%= start %>" data-end="<%= end %>" data-total="<%= total %>" data-end-message="<%= endMessage %>">
-          Showing arrests <%= start.toLocaleString('en-US') %>–<%= end.toLocaleString('en-US') %> of <%= total.toLocaleString('en-US') %>.
-        </p>
-
-        <% if (nextHref) { %>
-          <a class="button loadMore" href="<%= nextHref %>">Load more arrests</a>
-        <% } else { %>
-          <p class="feedEnd"><%= endMessage %></p>
+      <%# Everything below the search card, swapped as one when a filter changes %>
+      <div class="arrestResults">
+        <% const anyFilter = activeFilters.length > 0; %>
+        <% if (anyFilter) { %>
+          <p class="searchSummary">
+            <span class="summaryText"><%= total.toLocaleString('en-US') %> <%= total === 1 ? 'arrest matches' : 'arrests match' %>: <%= activeFilters.join(' · ') %>.</span>
+            <a href="/arrests">Clear all</a>
+          </p>
         <% } %>
-      <% } %>
+
+        <% if (errors.length > 0) { %>
+          <div class="formErrors" role="alert">
+            <p>That didn't work, so the newest arrests are shown instead:</p>
+            <ul>
+              <% errors.forEach((error) => { %>
+                <li><%= error %></li>
+              <% }) %>
+            </ul>
+          </div>
+        <% } %>
+
+        <% if (!isFirstPage) { %>
+          <p><a href="<%= firstPageHref %>">Back to the newest <%= anyFilter ? 'matches' : 'arrests' %></a></p>
+        <% } %>
+
+        <% if (cards.length === 0 && anyFilter) { %>
+          <section class="card emptyState">
+            <h2>No arrests match these filters</h2>
+            <p>Every filter has to match, and search looks for whole words. Try removing a filter, fewer words, or a different spelling.</p>
+          </section>
+        <% } else if (cards.length === 0) { %>
+          <section class="card emptyState">
+            <h2>No arrests yet</h2>
+            <p>No arrest logs have been imported yet.</p>
+          </section>
+        <% } else { %>
+          <div class="arrestFeed">
+            <% cards.forEach((card) => { %>
+              <%- include('partials/arrestCard', { card }) %>
+            <% }) %>
+          </div>
+
+          <% const endMessage = anyFilter ? "That's every matching arrest." : "That's every arrest on record."; %>
+          <p class="feedStatus" role="status" data-start="<%= start %>" data-end="<%= end %>" data-total="<%= total %>" data-end-message="<%= endMessage %>">
+            Showing arrests <%= start.toLocaleString('en-US') %>–<%= end.toLocaleString('en-US') %> of <%= total.toLocaleString('en-US') %>.
+          </p>
+
+          <% if (nextHref) { %>
+            <a class="button loadMore" href="<%= nextHref %>">Load more arrests</a>
+          <% } else { %>
+            <p class="feedEnd"><%= endMessage %></p>
+          <% } %>
+        <% } %>
+      </div>
     </div>
   </main>
 
