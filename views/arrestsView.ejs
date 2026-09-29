@@ -24,12 +24,45 @@
           <button class="button" type="submit">Search</button>
         </div>
         <p class="searchHint" id="arrestSearchHint">Whole words in a charge, statute, location, or report number, like ASSAULT, KALAKAUA, or 708-0833.</p>
+
+        <%# The Search button applies these too. The officer list only exists for logged-in users. %>
+        <div class="filterRow<%= options.officers ? ' filterRowWide' : '' %>">
+          <div class="filterField">
+            <label for="chargeFilter">Charge</label>
+            <select id="chargeFilter" name="charge">
+              <option value="">Any charge</option>
+              <% options.charges.forEach((option) => { %>
+                <option value="<%= option.value %>"<%= option.value === filters.charge ? ' selected' : '' %>><%= option.label %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="filterField">
+            <label for="sexFilter">Sex</label>
+            <select id="sexFilter" name="sex">
+              <option value="">Any</option>
+              <option value="M"<%= filters.sex === 'M' ? ' selected' : '' %>>Male</option>
+              <option value="F"<%= filters.sex === 'F' ? ' selected' : '' %>>Female</option>
+            </select>
+          </div>
+          <% if (options.officers) { %>
+            <div class="filterField">
+              <label for="officerFilter">Arresting officer</label>
+              <select id="officerFilter" name="officer">
+                <option value="">Any officer</option>
+                <% options.officers.forEach((option) => { %>
+                  <option value="<%= option.value %>"<%= option.value === filters.officer ? ' selected' : '' %>><%= option.label %></option>
+                <% }) %>
+              </select>
+            </div>
+          <% } %>
+        </div>
       </form>
 
-      <% if (search) { %>
+      <% const anyFilter = activeFilters.length > 0; %>
+      <% if (anyFilter) { %>
         <p class="searchSummary">
-          <%= total.toLocaleString('en-US') %> <%= total === 1 ? 'arrest matches' : 'arrests match' %> "<%= search %>".
-          <a href="/arrests">Clear search</a>
+          <%= total.toLocaleString('en-US') %> <%= total === 1 ? 'arrest matches' : 'arrests match' %>: <%= activeFilters.join(' · ') %>.
+          <a href="/arrests">Clear all</a>
         </p>
       <% } %>
 
@@ -45,13 +78,13 @@
       <% } %>
 
       <% if (!isFirstPage) { %>
-        <p><a href="<%= firstPageHref %>">Back to the newest <%= search ? 'matches' : 'arrests' %></a></p>
+        <p><a href="<%= firstPageHref %>">Back to the newest <%= anyFilter ? 'matches' : 'arrests' %></a></p>
       <% } %>
 
-      <% if (cards.length === 0 && search) { %>
+      <% if (cards.length === 0 && anyFilter) { %>
         <section class="card emptyState">
-          <h2>No arrests match "<%= search %>"</h2>
-          <p>Search looks for whole words, and every word has to match. Try fewer words, or a different spelling.</p>
+          <h2>No arrests match these filters</h2>
+          <p>Every filter has to match, and search looks for whole words. Try removing a filter, fewer words, or a different spelling.</p>
         </section>
       <% } else if (cards.length === 0) { %>
         <section class="card emptyState">
@@ -65,7 +98,7 @@
           <% }) %>
         </div>
 
-        <% const endMessage = search ? "That's every matching arrest." : "That's every arrest on record."; %>
+        <% const endMessage = anyFilter ? "That's every matching arrest." : "That's every arrest on record."; %>
         <p class="feedStatus" role="status" data-start="<%= start %>" data-end="<%= end %>" data-total="<%= total %>" data-end-message="<%= endMessage %>">
           Showing arrests <%= start.toLocaleString('en-US') %>–<%= end.toLocaleString('en-US') %> of <%= total.toLocaleString('en-US') %>.
         </p>
