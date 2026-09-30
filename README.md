@@ -8,6 +8,8 @@
     <br /><br />
     Check Da Kine is our take on HPD Stats, rebuilt with JavaScript and its ecosystem, to track statistics on arrests by the Honolulu Police Department
     <br /><br />
+    New domain: https://checkdakine.com/
+    <br /><br />
     Deployed on Railway: https://checkdakine.up.railway.app/
 </p>
 
