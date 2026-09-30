@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 const GeocodedPlace = require('../../model/GeocodedPlace');
 
 const nominatimUrl = 'https://nominatim.openstreetmap.org/search';
-const userAgent = 'CheckDaKine/1.0 (+https://checkdakine.up.railway.app)';
+const userAgent = 'CheckDaKine/1.0 (+https://checkdakine.com)';
 const requestGapMs = 1100; // A little over Nominatim's one-per-second limit
 const requestTimeoutMs = 20 * 1000;
 const maxLookupsPerRun = 30; // Keeps each run short; any extra places wait for the next run
