@@ -2,14 +2,17 @@
 // coordinates where known), and counts for the last 7 days.
 
 const Dispatch = require('../../model/Dispatch');
-const { toTopRows } = require('../chartRows');
+const { withShares, toRankedRows, toTopBars } = require('../chartRows');
 const { findStaleness } = require('../staleness');
 const { findPlaced, placeKey } = require('./geocodePlaces');
 const { formatDateTime, formatShortDateTime } = require('../dashboard/hawaiiDays');
 
 const historyDays = 7;
-const shownTypes = 10; // The rest fold into one "All others" bar
 const msPerDay = 24 * 60 * 60 * 1000;
+
+// A week holds dozens of call types, most with only a few calls, so the chart gives bars to
+// the most common and sums up the rest underneath. Its table lists every type.
+const shownTypes = 15;
 
 // HPD's list normally changes every 15 minutes or so
 const staleAfterHours = 1;
@@ -44,8 +47,8 @@ const getDispatchPage = async () => {
     ]),
   ]);
 
-  const byType = toTopRows(facets.byType, shownTypes);
-  const byDistrict = toTopRows(facets.byDistrict, facets.byDistrict.length); // All eight districts
+  const byType = toTopBars(facets.byType, shownTypes);
+  const byDistrict = withShares(toRankedRows(facets.byDistrict)); // All eight districts, and any not listed
 
   // Dots for the map: only what the popup shows, for calls whose place was found
   const placed = await findPlaced(activeCalls);
@@ -63,8 +66,9 @@ const getDispatchPage = async () => {
     unplacedCount: activeCalls.length - mapPoints.length,
     historyDays,
     history: {
+      since: formatDateTime(since), // The window moves with every page load
       total: facets.total[0]?.count ?? 0,
-      topType: byType[0] ?? null,
+      topType: byType.rows[0] ?? null,
       topDistrict: byDistrict[0] ?? null,
       byType,
       byDistrict,

@@ -1,8 +1,8 @@
-// Chart data: bar lengths, folding small rows into "All others", and grouping days into the
-// Arrests tile's bars.
+// Chart data: bar lengths, ranking rows, folding small rows into "All others" or summing up a
+// long tail under the chart, and grouping days into the Arrests tile's bars.
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
-const { withShares, toTopRows } = require('../services/chartRows');
+const { withShares, toRankedRows, toTopRows, toTopBars } = require('../services/chartRows');
 const { toArrestTrend } = require('../services/dashboard/arrestTrend');
 const { addDays } = require('../services/dashboard/hawaiiDays');
 
@@ -49,6 +49,47 @@ describe('toTopRows', () => {
 
   it('labels a missing value', () => {
     assert.equal(toTopRows([{ _id: null, count: 3 }], 10)[0].label, 'Not listed');
+  });
+});
+
+describe('toRankedRows', () => {
+  // HPD sometimes leaves a call's district blank
+  it('sorts largest first, with a missing and a blank label sharing one "Not listed" row', () => {
+    const rows = toRankedRows([
+      { _id: 'District 2', count: 3 },
+      { _id: '', count: 1 },
+      { _id: 'District 1', count: 5 },
+      { _id: null, count: 1 },
+    ]);
+    assert.deepEqual(rows, [
+      { label: 'District 1', count: 5 },
+      { label: 'District 2', count: 3 },
+      { label: 'Not listed', count: 2 },
+    ]);
+  });
+});
+
+describe('toTopBars', () => {
+  // Made-up call types with a long tail, like a week of HPD's dispatch calls
+  const typeCounts = [
+    { _id: 'THEFT', count: 20 },
+    { _id: 'MVC', count: 40 },
+    { _id: 'NOISE', count: 10 },
+    { _id: 'TRESPASS', count: 6 },
+    { _id: 'ARGUMENT', count: 4 },
+  ];
+
+  it('gives bars to the most common rows, sized against the largest, and sums up the rest', () => {
+    const { rows, bars, others } = toTopBars(typeCounts, 2);
+    assert.deepEqual(bars.map((bar) => [bar.label, bar.share]), [['MVC', 100], ['THEFT', 50]]);
+    assert.deepEqual(others, { rowCount: 3, count: 20, percent: 25 });
+    assert.deepEqual(rows.map((row) => row.label), ['MVC', 'THEFT', 'NOISE', 'TRESPASS', 'ARGUMENT']); // For the table
+  });
+
+  it('gives every row a bar when leaving out just one would only hide it', () => {
+    const { bars, others } = toTopBars(typeCounts, 4);
+    assert.equal(bars.length, 5);
+    assert.equal(others, null);
   });
 });
 

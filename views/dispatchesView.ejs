@@ -88,18 +88,22 @@
         <% if (history.total > 0) { %>
           <section class="card chartCard">
             <h2>Calls by type</h2>
-            <p class="chartCaption">The last <%= historyDays %> days, by the call type HPD listed.</p>
-            <%- include('partials/barList', { rows: history.byType }) %>
+            <p class="chartCaption">Calls received in the last <%= historyDays %> days (since <%= history.since %>), by the call type HPD listed.</p>
+            <%- include('partials/barList', { rows: history.byType.bars }) %>
+            <% const others = history.byType.others; %>
+            <% if (others) { %>
+              <p class="chartCaveat">The other <%= others.rowCount %> call types add up to <%= others.count.toLocaleString('en-US') %> calls (<%= others.percent %>% of all calls). The table lists every type.</p>
+            <% } %>
             <%- include('partials/tableView', {
               caption: 'Calls by type',
               columns: ['Call type', 'Calls'],
-              rows: history.byType.map((row) => [row.label, row.count.toLocaleString('en-US')]),
+              rows: history.byType.rows.map((row) => [row.label, row.count.toLocaleString('en-US')]),
             }) %>
           </section>
 
           <section class="card chartCard">
             <h2>Calls by district</h2>
-            <p class="chartCaption">The last <%= historyDays %> days, by HPD patrol district.</p>
+            <p class="chartCaption">Calls received in the last <%= historyDays %> days (since <%= history.since %>), by HPD patrol district.</p>
             <%- include('partials/barList', { rows: history.byDistrict }) %>
             <%- include('partials/tableView', {
               caption: 'Calls by district',
