@@ -53,7 +53,8 @@ const toCard = (record, showNames) => ({
     released: Boolean(offense.releasedAt),
     fields: toOffenseFields(offense, showNames),
   })),
-  source: record.lastSeenIn && {
+  // The log's PDF prints every name, so only logged-in users get a link to it
+  source: showNames && record.lastSeenIn && {
     label: formatDateTime(record.lastSeenIn.publishedAt),
     url: record.lastSeenIn.pdfUrl || record.lastSeenIn.sourceUrl,
   },
@@ -123,4 +124,4 @@ const listArrests = async ({ cursor, showNames, filters = {} }) => {
   };
 };
 
-module.exports = { listArrests, buildFilter, toHref };
+module.exports = { listArrests, buildFilter, toHref, toCard };
