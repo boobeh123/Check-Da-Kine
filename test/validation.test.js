@@ -1,10 +1,12 @@
 // Input checks: the dashboard's date range, the Arrests page's search and paging link, the
-// login form, and cleaning search words before they reach MongoDB.
+// login form (and what a rejected login flashes), and cleaning search words before they reach
+// MongoDB.
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
 const { validationResult, matchedData } = require('express-validator');
 const { validateDateRange, validateArrestsPage, validateLogin } = require('../middleware/validators');
 const { toSearchWords, toTextSearch } = require('../services/arrests/searchWords');
+const authController = require('../controller/authController');
 
 // Runs a validator chain against a stand-in request; returns the messages and the request
 const check = async (chain, { query = {}, body = {} } = {}) => {
@@ -101,6 +103,20 @@ describe('validateLogin', () => {
     assert.deepEqual((await check(validateLogin, { body: { email: 'someone@example.com', password: 'x'.repeat(201) } })).messages, [
       'Enter your password.',
     ]);
+  });
+
+  it('flashes only the messages for a rejected login, never what was typed', async () => {
+    // Flash messages are saved in the session store, so a typed password must never be among them
+    const password = 'x'.repeat(201);
+    const { req } = await check(validateLogin, { body: { email: 'someone@example.com', password } });
+    const flashed = [];
+    req.flash = (type, messages) => flashed.push([type, messages]);
+    let redirectedTo = null;
+
+    await authController.postLogin(req, { redirect: (url) => (redirectedTo = url) }, assert.fail);
+
+    assert.equal(redirectedTo, '/login');
+    assert.deepEqual(flashed, [['errors', [{ msg: 'Enter your password.' }]]]);
   });
 });
 
