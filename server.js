@@ -7,8 +7,8 @@ const morgan = require('morgan');
 const session = require('express-session');
 const { MongoStore } = require('connect-mongo'); // v6+
 const passport = require('passport');
-const flash = require('connect-flash');
 const connectDB = require('./config/database');
+const flash = require('./middleware/flash');
 
 // Sessions can't be signed without a secret; stop here rather than fail on the first login
 if (!process.env.SESSION_SECRET) {
@@ -80,17 +80,15 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// 8. Flash messages, the logged-in user, and the current path for every view.
-// req.flash() writes an empty object into the session even when there's nothing to read,
-// which would store a session for every visitor and crawler, so only read what exists.
-const takeFlash = (req, type) => (req.session.flash?.[type] ? req.flash(type) : []);
-
-app.use(flash());
+// 8. Flash messages, the logged-in user, and the current path for every view. Reading a
+// flash type never writes to the session (middleware/flash.js), so a visitor with nothing
+// queued still gets no session and no cookie.
+app.use(flash);
 app.use((req, res, next) => {
-  res.locals.success = takeFlash(req, 'success');
-  res.locals.errors = takeFlash(req, 'errors');
-  res.locals.error = takeFlash(req, 'error');
-  res.locals.info = takeFlash(req, 'info');
+  res.locals.success = req.flash('success');
+  res.locals.errors = req.flash('errors');
+  res.locals.error = req.flash('error');
+  res.locals.info = req.flash('info');
   res.locals.user = req.user;
   res.locals.currentPath = req.path; // So the nav can mark the page you're on
   next();
