@@ -10,7 +10,9 @@ exports.getLogin = async (req, res) => {
 exports.postLogin = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    req.flash('errors', errors.array());
+    // Only the messages: each full error carries what was typed, and flash messages are saved
+    // in the session store, so a rejected password would be saved there
+    req.flash('errors', errors.array().map(({ msg }) => ({ msg })));
     return res.redirect('/login');
   }
 
