@@ -97,6 +97,7 @@ Anything new that reads arrests should follow the same rules. `test/arrestCards.
 - `https://checkdakine.com` is written in two places: `head.ejs` (canonical and Open Graph URLs, always without the query string) and `geocodePlaces.js` (the User-Agent). Change both together.
 - Use escaped `<%= %>` for data; `<%-` is only for `include`. Server data reaches client JS through escaped `data-*` attributes; `data-calls` carries the map's JSON.
 - Charts are server-rendered partials (`barList`, `columnChart`, `trendChart`, `officerUnits`), each with a `tableView` twin for screen readers. `dashboardCharts.js` only sets each bar's size, from `data-share` through the `--barShare` custom property.
+- `services/chartRows.js` shapes the rows. `toTopRows` folds small rows into one "All others" bar, which suits a short tail (ethnicities). `toTopBars` suits a long tail (a week of dispatch call types): bars for the most common, the rest summed up in a line under the chart, and every row in the table, so no bar dwarfs the others.
 - Pages work without JavaScript, and scripts only add to them. On Arrests, "Load more" is a link and Search applies the filters. `arrestFeed.js` adds infinite scroll and applies a filter as soon as it changes, by fetching the server-rendered page and moving its elements in, never HTML strings.
 
 ## Tests
