@@ -1,14 +1,23 @@
-// Stores a copy of an arrest-log PDF on Cloudinary, since HPD only lists about two weeks
-// of logs. Resolves with the copy's URL.
+// Our copies of HPD's arrest-log PDFs on Cloudinary, kept since HPD only lists about two weeks
+// of logs. The PDFs print every arrestee's and officer's name, so only logged-in users get a
+// link to one (listArrests.js).
 
 const cloudinary = require('../../config/cloudinary');
 
+const toPublicId = (fileName) => `checkDaKine/arrestLogs/${fileName}`;
+
+// A copy's stored URL says how Cloudinary delivers it: /raw/upload/ is public, and
+// /raw/authenticated/ is private, downloadable only through a link signed with our API secret
+const publicCopyPattern = /\/raw\/upload\//;
+const isPublicCopy = (pdfUrl) => publicCopyPattern.test(pdfUrl);
+
+// Stores a copy of a PDF. Resolves with the copy's URL.
 const archivePdf = (pdf, fileName) =>
   new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         resource_type: 'raw', // Stored byte-for-byte, not processed as an image
-        public_id: `checkDaKine/arrestLogs/${fileName}`,
+        public_id: toPublicId(fileName),
         overwrite: true, // A retry after a failed parse replaces the same file
       },
       (error, result) => {
@@ -20,4 +29,19 @@ const archivePdf = (pdf, fileName) =>
     uploadStream.end(pdf);
   });
 
-module.exports = { archivePdf };
+// A link that downloads our copy of a log: its own URL while it's public, or a signed link
+// once it's private. null when there's no copy, or no API secret here to sign with.
+const archiveLink = ({ fileName, pdfUrl }) => {
+  if (!pdfUrl) return null;
+  if (isPublicCopy(pdfUrl)) return pdfUrl;
+  if (!cloudinary.config().api_secret) return null;
+
+  return cloudinary.url(toPublicId(fileName), {
+    resource_type: 'raw',
+    type: 'authenticated',
+    sign_url: true,
+    secure: true,
+  });
+};
+
+module.exports = { archivePdf, archiveLink, isPublicCopy, publicCopyPattern, toPublicId };
