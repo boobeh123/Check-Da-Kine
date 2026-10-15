@@ -36,6 +36,22 @@ describe('validateDateRange', () => {
     ]);
     assert.equal((await check(validateDateRange, { query: { start: ['2026-09-01', '2026-09-02'] } })).messages.length, 1);
   });
+
+  // The date inputs never offer a day after today, but a typed or old link can
+  it('rejects dates after today', async () => {
+    assert.deepEqual((await check(validateDateRange, { query: { start: '2999-01-01' } })).messages, [
+      "The start date can't be after today.",
+    ]);
+    assert.deepEqual((await check(validateDateRange, { query: { start: '2026-09-01', end: '2999-01-01' } })).messages, [
+      "The end date can't be after today.",
+    ]);
+  });
+
+  it('gives a date that is not real only that message', async () => {
+    assert.deepEqual((await check(validateDateRange, { query: { start: '2026-09-01', end: '09/26/2026' } })).messages, [
+      'Enter a real end date, written as YYYY-MM-DD.',
+    ]);
+  });
 });
 
 describe('validateArrestsPage', () => {
