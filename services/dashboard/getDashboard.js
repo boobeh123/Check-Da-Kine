@@ -8,15 +8,8 @@ const { normalizeOfficer } = require('../arrests/normalizeNames');
 const { findStaleness } = require('../staleness');
 const { toArrestTrend } = require('./arrestTrend');
 const { ethnicityGroups, toEthnicityGroup } = require('./ethnicityGroups');
-const {
-  toHawaiiDay,
-  todayInHawaii,
-  startOfHawaiiDay,
-  addDays,
-  countDays,
-  formatDay,
-  formatDateTime,
-} = require('./hawaiiDays');
+const { describeRange, buildPresets } = require('../dateRanges');
+const { toHawaiiDay, todayInHawaii, startOfHawaiiDay, addDays, formatDay, formatDateTime } = require('./hawaiiDays');
 
 const ageBands = [
   { label: '18–24', min: 18, max: 24 },
@@ -175,21 +168,6 @@ const getDataSpan = async () => {
   return { firstDay, lastDay, label: `${formatDay(firstDay)} to ${formatDay(lastDay)}` };
 };
 
-const buildPresets = (range, span) => {
-  const today = todayInHawaii();
-  const presets = [
-    { label: 'Last 7 days', start: addDays(today, -6), end: today },
-    { label: 'Last 30 days', start: addDays(today, -29), end: today },
-    { label: 'All time', start: span?.firstDay ?? today, end: today, href: '/' },
-  ];
-
-  return presets.map((preset) => ({
-    label: preset.label,
-    href: preset.href ?? `/?start=${preset.start}&end=${preset.end}`,
-    selected: preset.start === range.start && preset.end === range.end,
-  }));
-};
-
 // start and end: YYYY-MM-DD strings, already validated, or undefined for the defaults
 const getDashboard = async ({ start, end }) => {
   const [span, lastLog] = await Promise.all([
@@ -200,18 +178,15 @@ const getDashboard = async ({ start, end }) => {
   const today = todayInHawaii();
   const rangeStart = start ?? span?.firstDay ?? today;
   const rangeEnd = end ?? today;
+  const range = describeRange(rangeStart, rangeEnd);
 
   // The end day counts in full, so the range runs until the start of the next day
   const { dayCounts, ...stats } = await getArrestStats(startOfHawaiiDay(rangeStart), startOfHawaiiDay(addDays(rangeEnd, 1)));
 
   return {
-    range: {
-      start: rangeStart,
-      end: rangeEnd,
-      label: `${formatDay(rangeStart)} – ${formatDay(rangeEnd)}`,
-      days: countDays(rangeStart, rangeEnd),
-    },
-    presets: buildPresets({ start: rangeStart, end: rangeEnd }, span),
+    range,
+    // All time is the home page's default
+    presets: buildPresets({ path: '/', range, firstDay: span?.firstDay, today, defaultLabel: 'All time' }),
     span,
     today,
     lastUpdated: lastLog ? formatDateTime(lastLog.publishedAt) : null,
