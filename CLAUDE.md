@@ -37,7 +37,7 @@ npm run create-user -- --email someone@example.com         # invite-only login, 
 
 - No linter or formatter is set up. Match the style of the file you're editing.
 - Node 22.13 or newer (`engines`); pdfjs-dist 6 needs it.
-- Copy `.env.example` to `.env` in the repo root. The server won't start without `SESSION_SECRET`. `npm run scrape` needs the three Cloudinary variables unless it's given `--skip-upload`. `scrape-news` reads X only when `X_BEARER_TOKEN` is set, since X bills per post read. On Railway, `NODE_ENV=production` turns on secure cookies and the CSP's `upgrade-insecure-requests`.
+- Copy `.env.example` to `.env` in the repo root. The server won't start without `SESSION_SECRET`. `npm run scrape` needs the three Cloudinary variables unless it's given `--skip-upload`. The website and `npm run reparse` need `CLOUDINARY_CLOUD_NAME` and `CLOUDINARY_API_SECRET` to sign links to the private archive: without them, logged-in users get HPD's link instead, and reparse can't read logs HPD no longer lists. `scrape-news` reads X only when `X_BEARER_TOKEN` is set, since X bills per post read. On Railway, `NODE_ENV=production` turns on secure cookies and the CSP's `upgrade-insecure-requests`.
 - The scrapers and `reparse` write to whatever `DB_STRING` points at, and `reparse` replaces every arrest record. Don't run them against the production database unless Bobby asks.
 - The first OCR run downloads Tesseract's English model from the jsDelivr CDN into `tessdataCache/` (gitignored).
 - npm 11 may warn that bcrypt's and tesseract.js's install scripts weren't run. Both work without them; bcrypt loads its bundled prebuilt binary.
@@ -65,13 +65,14 @@ Requests go `routes/` → `middleware/` (validators, the login rate limiter) →
 - `ArrestRecord.name` is `select: false`. `listArrests` adds `+name` only when `showNames` is true, and leaves out `offenses.officer` otherwise.
 - The officer dropdown is built only for logged-in users, and `resolveFilters` drops a guest's officer filter on the server, so guests can't tie an officer to arrests through the filters.
 - The search's text index (`arrestSearch`) covers charge, statute, location and report number, never names. The dashboard sends counts only.
-- Guests never get a link to an arrest log, because its PDF prints every name: `toCard` sets a card's `source` only for logged-in users.
+- Guests never get a link to an arrest log, because its PDF prints every name: `toCard` sets a card's `source` only for logged-in users. Our copies on Cloudinary are private, so nobody can download one by guessing its address: `archiveLink` (archivePdf.js) signs each link.
 - Pages that show names send `Cache-Control: private, no-store`.
 
 Anything new that reads arrests should follow the same rules. `test/arrestCards.test.js` checks what a guest's card contains.
 
 **Arrest logs** (`services/arrestLog/`). HPD posts a log about every 6 hours, each covering 12 hours, so most arrests appear in two logs.
-- `importArrestLogs` takes each listed log that isn't `parsed` yet, oldest first: download into memory, archive to Cloudinary (`archivePdf`), OCR (`parseArrestLog`), then save each arrest (`saveRecord`). A failed log is marked `failed` and retried on the next run, while HPD still lists it (about two weeks).
+- `importArrestLogs` takes each listed log that isn't `parsed` yet, oldest first: download into memory, archive a private copy to Cloudinary (`archivePdf`), OCR (`parseArrestLog`), then save each arrest (`saveRecord`). A failed log is marked `failed` and retried on the next run, while HPD still lists it (about two weeks).
+- A copy's `pdfUrl` says how Cloudinary delivers it: `/raw/upload/` is public and `/raw/authenticated/` is private. Copies uploaded before the archive went private (Oct 2026) are moved by `makeArchivePrivate`, which `npm run scrape` runs after every import. Each moved copy has to download through a signed link before its new URL is saved, or it's moved back.
 - `parseArrestLog`: pdf.js renders each page at 2x onto an @napi-rs/canvas. It's an ES module, so it's loaded with dynamic `import()`. The pages are cropped and stacked into one tall strip, and a scan down one pixel column finds where each arrest and each charge starts. Then sharp enlarges each field box and a single Tesseract worker reads them one at a time.
 - `layoutConstants.js` holds pixel positions measured on HPD's PDFs at 2x (1584 px wide). If HPD changes its layout, these are what move. Check any change with `npm run parse` on new PDFs and the OCR regression test.
 - `toRecordFields` leaves out a sex or age that didn't read cleanly instead of saving it wrong, and skips an arrest with no readable time or report number. `warnings` records why, and the card shows "Flagged for review".
