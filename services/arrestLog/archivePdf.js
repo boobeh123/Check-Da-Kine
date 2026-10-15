@@ -1,6 +1,7 @@
 // Our copies of HPD's arrest-log PDFs on Cloudinary, kept since HPD only lists about two weeks
-// of logs. The PDFs print every arrestee's and officer's name, so only logged-in users get a
-// link to one (listArrests.js).
+// of logs. The PDFs print every arrestee's and officer's name, so the copies are private, and
+// only logged-in users get a link to one (listArrests.js). Copies uploaded before the archive
+// went private are moved by makeArchivePrivate.js.
 
 const cloudinary = require('../../config/cloudinary');
 
@@ -11,12 +12,14 @@ const toPublicId = (fileName) => `checkDaKine/arrestLogs/${fileName}`;
 const publicCopyPattern = /\/raw\/upload\//;
 const isPublicCopy = (pdfUrl) => publicCopyPattern.test(pdfUrl);
 
-// Stores a copy of a PDF. Resolves with the copy's URL.
+// Stores a private copy of a PDF. Resolves with the copy's URL, which only says where it is:
+// downloading it takes a signed link (archiveLink).
 const archivePdf = (pdf, fileName) =>
   new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         resource_type: 'raw', // Stored byte-for-byte, not processed as an image
+        type: 'authenticated', // Private
         public_id: toPublicId(fileName),
         overwrite: true, // A retry after a failed parse replaces the same file
       },
