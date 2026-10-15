@@ -1,4 +1,5 @@
-// Imports new arrest logs from HPD: download, archive to Cloudinary, parse, and save.
+// Imports new arrest logs from HPD: download, archive to Cloudinary, parse, and save. Then it
+// moves any copy uploaded while the archive was public into the private archive.
 // Railway runs this on a schedule, and it exits when it's done.
 //
 // Usage: node jobs/scrapeArrestLogs.js [--limit N] [--skip-upload]
@@ -13,6 +14,7 @@ const connectDB = require('../config/database');
 const ArrestLog = require('../model/ArrestLog');
 const ArrestRecord = require('../model/ArrestRecord');
 const { importArrestLogs } = require('../services/arrestLog/importArrestLogs');
+const { makeArchivePrivate } = require('../services/arrestLog/makeArchivePrivate');
 
 const cloudinaryVariables = ['CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'];
 
@@ -61,6 +63,13 @@ const main = async () => {
 
     // A non-zero exit marks the run as failed in Railway's dashboard
     if (totals.failed > 0) process.exitCode = 1;
+
+    // After the import, so a problem here never holds up new logs. Once every copy is private,
+    // this finds nothing and prints nothing.
+    if (options.upload) {
+      const { moved, left } = await makeArchivePrivate();
+      if (moved > 0 || left > 0) console.log(`Archive: moved ${moved} public copies to private, ${left} still public`);
+    }
   } finally {
     await mongoose.disconnect();
   }
