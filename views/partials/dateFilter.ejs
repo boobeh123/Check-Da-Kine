@@ -1,10 +1,10 @@
 <%# The date filter: one-click ranges and From/To dates, from presets, range, today, and errors.
-    A page can also pass filterAction (where the form goes, "/" by default), fallbackMessage
-    (what a bad range falls back to), and onLight (the version for the page's light background;
-    by default the filter sits on the blue page band). %>
+    A page can also pass filterAction (where the form goes, "/" by default) and onLight (the
+    version for the page's light background; by default the filter sits on the blue page band).
+    A bad range falls back to all dates on every page that uses it. %>
 <% if (errors.length > 0) { %>
   <div class="formErrors" role="alert">
-    <p><%= locals.fallbackMessage ?? "That date range didn't work, so all dates are shown instead:" %></p>
+    <p>That date range didn't work, so all dates are shown instead:</p>
     <ul>
       <% errors.forEach((error) => { %>
         <li><%= error %></li>

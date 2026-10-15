@@ -6,8 +6,8 @@ exports.getDispatches = async (req, res) => {
   const result = validationResult(req);
   const errors = result.array().map((error) => error.msg);
 
-  // A bad range is reported on the page itself, which falls back to the last 7 days, the way
-  // the home page handles one (indexController.js)
+  // A bad range is reported on the page itself, which falls back to all time, the way the
+  // home page handles one (indexController.js)
   const { start, end } = result.isEmpty() ? matchedData(req) : {};
   const page = await getDispatchPage({ start, end });
 

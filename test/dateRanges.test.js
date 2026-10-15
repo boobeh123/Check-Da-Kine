@@ -18,15 +18,21 @@ describe('describeRange', () => {
 describe('buildPresets', () => {
   const today = '2026-10-14';
 
-  it('links the Dispatches ranges, with its default (the last 7 days) at the plain address', () => {
-    const range = describeRange('2026-10-08', today);
-    const presets = buildPresets({ path: '/dispatches', range, firstDay: '2026-09-26', today, defaultLabel: 'Last 7 days' });
+  it('links the Dispatches ranges, with its default (all time) at the plain address', () => {
+    const range = describeRange('2026-09-26', today);
+    const presets = buildPresets({ path: '/dispatches', range, firstDay: '2026-09-26', today, defaultLabel: 'All time' });
 
     assert.deepEqual(presets, [
-      { label: 'Last 7 days', href: '/dispatches', selected: true },
+      { label: 'Last 7 days', href: '/dispatches?start=2026-10-08&end=2026-10-14', selected: false },
       { label: 'Last 30 days', href: '/dispatches?start=2026-09-15&end=2026-10-14', selected: false },
-      { label: 'All time', href: '/dispatches?start=2026-09-26&end=2026-10-14', selected: false },
+      { label: 'All time', href: '/dispatches', selected: true },
     ]);
+  });
+
+  it('can make any of the ranges the default', () => {
+    const range = describeRange('2026-10-08', today);
+    const presets = buildPresets({ path: '/', range, firstDay: '2026-09-26', today, defaultLabel: 'Last 7 days' });
+    assert.deepEqual(presets[0], { label: 'Last 7 days', href: '/', selected: true });
   });
 
   it("keeps the home page's links, where all time is the default", () => {
