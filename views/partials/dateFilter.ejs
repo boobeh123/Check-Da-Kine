@@ -1,6 +1,10 @@
+<%# The date filter: one-click ranges and From/To dates, from presets, range, today, and errors.
+    A page can also pass filterAction (where the form goes, "/" by default), fallbackMessage
+    (what a bad range falls back to), and onLight (the version for the page's light background;
+    by default the filter sits on the blue page band). %>
 <% if (errors.length > 0) { %>
   <div class="formErrors" role="alert">
-    <p>That date range didn't work, so all dates are shown instead:</p>
+    <p><%= locals.fallbackMessage ?? "That date range didn't work, so all dates are shown instead:" %></p>
     <ul>
       <% errors.forEach((error) => { %>
         <li><%= error %></li>
@@ -9,7 +13,7 @@
   </div>
 <% } %>
 
-<form class="dateFilter" method="get" action="/" aria-label="Date range">
+<form class="dateFilter<%= locals.onLight ? ' dateFilterLight' : '' %>" method="get" action="<%= locals.filterAction ?? '/' %>" aria-label="Date range">
   <ul class="presetList">
     <% presets.forEach((preset) => { %>
       <li>
@@ -28,6 +32,6 @@
     <input type="date" id="endDate" name="end" value="<%= range.end %>" max="<%= today %>">
   </div>
 
-  <%# The filter sits on the blue page band, so its button is the white version %>
-  <button class="button buttonInverse" type="submit">Apply</button>
+  <%# On the blue page band, the button is the white version %>
+  <button class="button<%= locals.onLight ? '' : ' buttonInverse' %>" type="submit">Apply</button>
 </form>

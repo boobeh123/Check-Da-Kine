@@ -61,7 +61,13 @@
         </section>
 
         <section class="summarySection">
-          <h2>The last <%= historyDays %> days</h2>
+          <h2><%= range.label %> (<%= range.days %> <%= range.days === 1 ? 'day' : 'days' %>)</h2>
+          <%# The range covers the history below, not the active calls above, so the filter sits here rather than on the page band %>
+          <%- include('partials/dateFilter', {
+            filterAction: '/dispatches',
+            fallbackMessage: "That date range didn't work, so the last 7 days are shown instead:",
+            onLight: true,
+          }) %>
           <dl class="statRow">
             <div class="statTile">
               <dt class="statLabel">Calls seen</dt>
@@ -82,13 +88,16 @@
               </div>
             <% } %>
           </dl>
+          <% if (recordsStart) { %>
+            <p class="dataNote">Calls on record start <%= recordsStart %>, so this range has none before then.</p>
+          <% } %>
           <p class="dataNote">HPD lists a call only while it's open, and we check every 10 minutes, so a call that opens and closes between checks is never seen. Read these counts as "at least this many".</p>
         </section>
 
         <% if (history.total > 0) { %>
           <section class="card chartCard">
             <h2>Calls by type</h2>
-            <p class="chartCaption">Calls received in the last <%= historyDays %> days (since <%= history.since %>), by the call type HPD listed.</p>
+            <p class="chartCaption">Calls received <%= range.label %>, by the call type HPD listed.</p>
             <%- include('partials/barList', { rows: history.byType.bars }) %>
             <% const others = history.byType.others; %>
             <% if (others) { %>
@@ -103,7 +112,7 @@
 
           <section class="card chartCard">
             <h2>Calls by district</h2>
-            <p class="chartCaption">Calls received in the last <%= historyDays %> days (since <%= history.since %>), by HPD patrol district.</p>
+            <p class="chartCaption">Calls received <%= range.label %>, by HPD patrol district.</p>
             <%- include('partials/barList', { rows: history.byDistrict }) %>
             <%- include('partials/tableView', {
               caption: 'Calls by district',

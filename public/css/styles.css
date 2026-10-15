@@ -843,6 +843,32 @@ Date filter
   border-radius: var(--radiusMd);
 }
 
+/* The version on the page's light background (the Dispatches history): blue on white, with the
+   chosen range filled in blue */
+.dateFilterLight {
+  margin-bottom: var(--spaceMd);
+}
+
+.dateFilterLight .presetLink {
+  color: var(--colorPrimary);
+  border-color: var(--colorPrimary);
+}
+
+.dateFilterLight .presetLink:hover {
+  color: var(--colorPrimaryDark);
+  border-color: var(--colorPrimaryDark);
+}
+
+.dateFilterLight .presetLink[aria-current='true'] {
+  color: var(--colorOnPrimary);
+  background-color: var(--colorPrimary);
+  border-color: var(--colorPrimary);
+}
+
+.dateFilterLight .dateField input {
+  border-color: var(--colorInputBorder);
+}
+
 /**************************************************************
 Dashboard
 ***************************************************************/

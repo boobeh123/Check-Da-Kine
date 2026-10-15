@@ -1,22 +1,33 @@
 const { body, query } = require('express-validator');
+const { todayInHawaii } = require('../services/dashboard/hawaiiDays');
 
 const dayFormat = { format: 'YYYY-MM-DD', strictMode: true, delimiters: ['-'] };
 
-// Dates arrive from the dashboard's date inputs as YYYY-MM-DD; both are optional
+// YYYY-MM-DD strings sort the same way as the dates they represent. The date inputs stop at
+// today (Hawaii time) too.
+const notAfterToday = (day) => day <= todayInHawaii();
+
+// Dates arrive from the date filter's inputs (the home page and the Dispatches history) as
+// YYYY-MM-DD; both are optional. A date that isn't real gets only that message.
 exports.validateDateRange = [
   query('start')
     .optional({ values: 'falsy' })
     .isString()
     .isDate(dayFormat)
-    .withMessage('Enter a real start date, written as YYYY-MM-DD.'),
+    .withMessage('Enter a real start date, written as YYYY-MM-DD.')
+    .bail()
+    .custom(notAfterToday)
+    .withMessage("The start date can't be after today."),
   query('end')
     .optional({ values: 'falsy' })
     .isString()
     .isDate(dayFormat)
     .withMessage('Enter a real end date, written as YYYY-MM-DD.')
-    // YYYY-MM-DD strings sort the same way as the dates they represent
+    .bail()
     .custom((end, { req }) => typeof req.query.start !== 'string' || !req.query.start || end >= req.query.start)
-    .withMessage('The end date must be on or after the start date.'),
+    .withMessage('The end date must be on or after the start date.')
+    .custom(notAfterToday)
+    .withMessage("The end date can't be after today."),
 ];
 
 const brokenLinkMessage = 'That link to more arrests is broken.';
