@@ -1,4 +1,8 @@
-<%# One-time confirmations set before a redirect (logged in, logged out) %>
+<%# One-time confirmations set before a redirect (logged in, logged out). The check mark is
+    decorative, so screen readers skip it and read only the message. %>
 <% (locals.success ?? []).forEach((message) => { %>
-  <p class="flashMessage" role="status"><%= message %></p>
+  <p class="flashMessage" role="status">
+    <svg class="flashIcon" viewBox="0 0 20 20" aria-hidden="true"><path d="M4.5 10.5l3.5 3.5 7.5-8"/></svg>
+    <span><%= message %></span>
+  </p>
 <% }) %>

@@ -17,6 +17,9 @@ Base
   --colorWarning: #d97706;
   --colorWarningText: #92400e; /* 6.4:1 on the warning surface */
   --colorWarningSurface: #fef3c7;
+  --colorSuccess: #15803d; /* 4.6:1 on the success surface */
+  --colorSuccessText: #14532d; /* 8.3:1 on the success surface */
+  --colorSuccessSurface: #dcfce7;
 
   /* Hero band text and outlines, checked for contrast against the brand blue */
   --colorOnPrimaryMuted: #d7e5f2;
@@ -291,14 +294,31 @@ Components
   margin-bottom: 0;
 }
 
+/* A confirmation (logged in, logged out): green, with a check mark, the way the error box is
+   red and the out-of-date notice amber */
 .flashMessage {
+  display: flex;
+  gap: var(--spaceSm);
+  align-items: flex-start;
   margin-bottom: var(--spaceMd);
   padding: var(--spaceSm) var(--spaceMd);
-  color: var(--colorText); /* It can sit on the blue band, which sets white text */
-  background-color: var(--colorSurface);
-  border: var(--borderWidth) solid var(--colorBorder);
-  border-left: var(--focusWidth) solid var(--colorPrimary);
+  color: var(--colorSuccessText); /* It sits on the blue band, which sets white text */
+  background-color: var(--colorSuccessSurface);
+  border: var(--borderWidth) solid var(--colorSuccess);
+  border-left: var(--focusWidth) solid var(--colorSuccess);
   border-radius: var(--radiusMd);
+}
+
+.flashIcon {
+  flex: none;
+  width: 1.25em;
+  height: 1.25em;
+  margin-top: calc((1lh - 1.25em) / 2); /* Centered on the first line of the message */
+  fill: none;
+  stroke: var(--colorSuccess);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 /* Data that should have been refreshed by now. It can sit on the blue band, too. */
