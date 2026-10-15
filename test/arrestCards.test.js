@@ -2,7 +2,11 @@
 // to the arrest log (whose PDF prints every name) are for logged-in users only.
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
+const cloudinary = require('../config/cloudinary');
 const { toCard } = require('../services/arrests/listArrests');
+
+// Made-up credentials. Links are signed locally, so nothing is sent anywhere.
+cloudinary.config({ cloud_name: 'example', api_key: '000', api_secret: 'test-secret' });
 
 // A record as the Arrests query returns it, with every field filled in. Every value is made up.
 const record = {
@@ -21,6 +25,7 @@ const record = {
     },
   ],
   lastSeenIn: {
+    fileName: '2026-09-26-17-00-32_Arrest_Log.pdf',
     publishedAt: new Date('2026-09-27T03:00:32.000Z'),
     pdfUrl: 'https://res.cloudinary.com/example/raw/upload/checkDaKine/arrestLogs/2026-09-26-17-00-32_Arrest_Log.pdf',
     sourceUrl: 'https://www.honolulupd.org/wp-content/uploads/2026/09/2026-09-26-17-00-32_Arrest_Log.pdf',
@@ -47,6 +52,12 @@ describe('toCard', () => {
     assert.ok(card.offenses[0].fields.some(([label, value]) => label === 'Arresting officer' && value === 'OFFICER, TEST'));
     assert.equal(card.source.url, record.lastSeenIn.pdfUrl);
     assert.match(card.source.label, /^Sep 26, 2026/);
+  });
+
+  it('gives a logged-in user a signed link to a private copy', () => {
+    const pdfUrl = record.lastSeenIn.pdfUrl.replace('/raw/upload/', '/raw/authenticated/');
+    const card = toCard({ ...record, lastSeenIn: { ...record.lastSeenIn, pdfUrl } }, true);
+    assert.match(card.source.url, /\/raw\/authenticated\/s--[\w-]{8}--\/.*2026-09-26-17-00-32_Arrest_Log\.pdf/);
   });
 
   it("links HPD's own copy when the log wasn't archived", () => {
