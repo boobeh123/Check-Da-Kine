@@ -63,11 +63,7 @@
         <section class="summarySection">
           <h2><%= range.label %> (<%= range.days %> <%= range.days === 1 ? 'day' : 'days' %>)</h2>
           <%# The range covers the history below, not the active calls above, so the filter sits here rather than on the page band %>
-          <%- include('partials/dateFilter', {
-            filterAction: '/dispatches',
-            fallbackMessage: "That date range didn't work, so the last 7 days are shown instead:",
-            onLight: true,
-          }) %>
+          <%- include('partials/dateFilter', { filterAction: '/dispatches', onLight: true }) %>
           <dl class="statRow">
             <div class="statTile">
               <dt class="statLabel">Calls seen</dt>

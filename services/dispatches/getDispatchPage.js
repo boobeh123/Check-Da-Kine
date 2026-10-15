@@ -1,6 +1,6 @@
 // Everything the Dispatches page shows: the calls HPD listed in its latest update (with map
-// coordinates where known), and counts for a date range, the last 7 days unless another is
-// chosen with the date filter.
+// coordinates where known), and counts for a date range, every day on record unless another
+// range is chosen with the date filter.
 
 const Dispatch = require('../../model/Dispatch');
 const { withShares, toRankedRows, toTopBars } = require('../chartRows');
@@ -17,10 +17,8 @@ const {
   formatShortDateTime,
 } = require('../dashboard/hawaiiDays');
 
-const defaultDays = 7;
-
-// A week holds dozens of call types, most with only a few calls, so the chart gives bars to
-// the most common and sums up the rest underneath. Its table lists every type.
+// Even a week holds dozens of call types, most with only a few calls, so the chart gives bars
+// to the most common and sums up the rest underneath. Its table lists every type.
 const shownTypes = 15;
 
 // HPD's list normally changes every 15 minutes or so
@@ -44,11 +42,11 @@ const getDispatchPage = async ({ start, end } = {}) => {
   ]);
   if (!latest) return { lastUpdated: null, stale: null };
 
-  // Without a start, the range is the 7 days that end on the end day (today by default)
+  // All time by default, like the home page: from the first call on record to today. An end
+  // before the first call (with no start) is a one-day range with nothing in it, not a backwards one.
   const today = todayInHawaii();
-  const rangeEnd = end ?? today;
-  const range = describeRange(start ?? addDays(rangeEnd, -(defaultDays - 1)), rangeEnd);
   const firstDay = toHawaiiDay(first.receivedAt);
+  const range = describeRange(start ?? (end && end < firstDay ? end : firstDay), end ?? today);
 
   const [activeCalls, [facets]] = await Promise.all([
     // Every call in HPD's latest update shares that update's time as its lastSeenAt
@@ -83,9 +81,9 @@ const getDispatchPage = async ({ start, end } = {}) => {
     activeCalls: activeCalls.map(toCallRow),
     mapPoints,
     unplacedCount: activeCalls.length - mapPoints.length,
-    // The date filter. The last 7 days are the default here; the home page's is all time.
+    // The date filter, with all time as the default, as on the home page
     range,
-    presets: buildPresets({ path: '/dispatches', range, firstDay, today, defaultLabel: 'Last 7 days' }),
+    presets: buildPresets({ path: '/dispatches', range, firstDay, today, defaultLabel: 'All time' }),
     today,
     // Set when the range starts before the first call on record, so the page can say so
     recordsStart: range.start < firstDay ? formatDay(firstDay) : null,

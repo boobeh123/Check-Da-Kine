@@ -1,4 +1,9 @@
-<%# One-time confirmations set before a redirect (logged in, logged out) %>
+<%# One-time confirmations set before a redirect (logged in, logged out). The check mark is
+    decorative, so screen readers skip it and read only the message. Its size and stroke are set
+    on the svg too, so it draws as a small check even before the stylesheet loads. %>
 <% (locals.success ?? []).forEach((message) => { %>
-  <p class="flashMessage" role="status"><%= message %></p>
+  <p class="flashMessage" role="status">
+    <svg class="flashIcon" viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 10.5l3.5 3.5 7.5-8"/></svg>
+    <span><%= message %></span>
+  </p>
 <% }) %>

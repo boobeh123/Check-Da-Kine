@@ -82,7 +82,7 @@ Anything new that reads arrests should follow the same rules. `test/arrestCards.
 **Dispatches** (`services/dispatches/`).
 - HPD's page lists only open calls, despite its file name, and prints 24-hour times followed by a meaningless AM/PM.
 - `saveDispatches` upserts each call by received time, type and address, and moves `lastSeenAt` forward with `$max`. "Active now" means the calls whose `lastSeenAt` equals the newest one.
-- "Active now" and the map always show HPD's latest update. The history below them (the stat tiles and both charts) covers a date range from the date filter: the last 7 days by default.
+- "Active now" and the map always show HPD's latest update. The history below them (the stat tiles and both charts) covers a date range from the date filter: all time by default.
 - `geocodePlaces` follows Nominatim's usage policy: at most one request per second, a User-Agent naming checkdakine.com, and every result cached in `GeocodedPlace`, misses included. It makes at most 30 lookups per run, bounded to Oahu. HPD's masked house numbers are rebuilt first: `51XX` is the 5100 block, and `911200` is the zone-lot number 91-1200.
 
 **News and X** (`services/news/`).
@@ -101,7 +101,7 @@ Anything new that reads arrests should follow the same rules. `test/arrestCards.
 - Charts are server-rendered partials (`barList`, `columnChart`, `trendChart`, `officerUnits`), each with a `tableView` twin for screen readers. `dashboardCharts.js` only sets each bar's size, from `data-share` through the `--barShare` custom property.
 - The date filter is shared: `partials/dateFilter.ejs`, `validateDateRange`, and `services/dateRanges.js` (the range label and the one-click preset links).
   - The home page shows it on the blue band, with all time as the default.
-  - The Dispatches history passes `filterAction`, `fallbackMessage`, and `onLight` for the light version, with the last 7 days as the default.
+  - The Dispatches history passes `filterAction` and `onLight` for the light version. It also defaults to all time.
   - Ranges are whole Hawaii days, and can't start or end after today.
 - `services/chartRows.js` shapes the rows. `toTopRows` folds small rows into one "All others" bar, which suits a short tail (ethnicities). `toTopBars` suits a long tail (a week of dispatch call types): bars for the most common, the rest summed up in a line under the chart, and every row in the table, so no bar dwarfs the others.
 - Pages work without JavaScript, and scripts only add to them. On Arrests, "Load more" is a link and Search applies the filters. `arrestFeed.js` adds infinite scroll and applies a filter as soon as it changes, by fetching the server-rendered page and moving its elements in, never HTML strings.
