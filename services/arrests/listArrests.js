@@ -4,6 +4,7 @@
 const mongoose = require('mongoose');
 const ArrestRecord = require('../../model/ArrestRecord');
 const { formatDateTime } = require('../dashboard/hawaiiDays');
+const { archiveLink } = require('../arrestLog/archivePdf');
 const { toSearchWords, toTextSearch } = require('./searchWords');
 
 const pageSize = 20;
@@ -53,10 +54,11 @@ const toCard = (record, showNames) => ({
     released: Boolean(offense.releasedAt),
     fields: toOffenseFields(offense, showNames),
   })),
-  // The log's PDF prints every name, so only logged-in users get a link to it
+  // The log's PDF prints every name, so only logged-in users get a link to it: our copy, or
+  // HPD's while it still lists the log, if we have none or can't sign a link to ours
   source: showNames && record.lastSeenIn && {
     label: formatDateTime(record.lastSeenIn.publishedAt),
-    url: record.lastSeenIn.pdfUrl || record.lastSeenIn.sourceUrl,
+    url: archiveLink(record.lastSeenIn) ?? record.lastSeenIn.sourceUrl,
   },
   warnings: record.warnings ?? [],
 });
@@ -104,7 +106,7 @@ const listArrests = async ({ cursor, showNames, filters = {} }) => {
       .sort({ arrestedAt: -1, _id: -1 })
       .limit(pageSize + 1) // One extra shows whether another page exists
       .select(showNames ? '+name' : '-offenses.officer')
-      .populate('lastSeenIn', 'publishedAt pdfUrl sourceUrl')
+      .populate('lastSeenIn', 'publishedAt fileName pdfUrl sourceUrl')
       .lean(),
     ArrestRecord.countDocuments(matching),
     ArrestRecord.countDocuments(filter),

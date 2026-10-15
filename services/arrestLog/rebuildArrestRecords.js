@@ -5,6 +5,7 @@
 const mongoose = require('mongoose');
 const ArrestLog = require('../../model/ArrestLog');
 const ArrestRecord = require('../../model/ArrestRecord');
+const { archiveLink } = require('./archivePdf');
 const { downloadPdf } = require('./fetchArrestLogs');
 const { parseArrestLog } = require('./parseArrestLog');
 const { saveRecords, countOffenses } = require('./importArrestLogs');
@@ -16,9 +17,10 @@ const StagingRecord =
   mongoose.models.StagingArrestRecord ??
   mongoose.model('StagingArrestRecord', ArrestRecord.schema, stagingCollection);
 
-// Our Cloudinary copy first; HPD's link only works while HPD still lists the log
+// Our Cloudinary copy first (a private copy needs the API secret to sign its link); HPD's
+// link only works while HPD still lists the log
 const downloadStoredPdf = async (log) => {
-  const urls = [log.pdfUrl, log.sourceUrl].filter(Boolean);
+  const urls = [archiveLink(log), log.sourceUrl].filter(Boolean);
   let lastError;
   for (const url of urls) {
     try {
