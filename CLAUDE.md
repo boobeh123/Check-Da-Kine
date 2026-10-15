@@ -52,7 +52,7 @@ Requests go `routes/` → `middleware/` (validators, the login rate limiter) →
 - The CSP's `img-src` lists each outside image host: Cloudinary, OpenStreetMap's tiles, honolulupd.org and pbs.twimg.com. `script-src` is helmet's default `'self'`; Leaflet is served from `node_modules/leaflet/dist` at `/vendor/leaflet`.
 - A visitor has no session, and no cookie, until something is saved to it (a login, or a flash message). `saveUninitialized` is false, and reading a flash type never writes to the session.
 - `req.flash()` comes from `middleware/flash.js`, which replaced connect-flash (last released in 2013; it calls Node's deprecated `util.isArray`, and it wrote to the session on every read). It keeps the two calls the app makes: `req.flash(type, message)` queues a message or each item of a list, and `req.flash(type)` returns that type's messages and clears them. It looks up `req.session` on every call, because Passport replaces the session at login and logout.
-- Visitors don't get sessions, which is why the home and Arrests pages don't flash and redirect on a bad query string: they show the message on the page with a 400 status and fall back to the defaults.
+- Visitors don't get sessions, which is why the home, Arrests, and Dispatches pages don't flash and redirect on a bad query string: they show the message on the page with a 400 status and fall back to the defaults.
 
 **Input.**
 - Every field starts with `.isString()`, and controllers read input with `matchedData(req)`. In Express 5, `req.query` is a getter that re-parses the URL, so sanitizers like `.trim()` never change it; only `matchedData` has the cleaned values.
@@ -82,6 +82,7 @@ Anything new that reads arrests should follow the same rules. `test/arrestCards.
 **Dispatches** (`services/dispatches/`).
 - HPD's page lists only open calls, despite its file name, and prints 24-hour times followed by a meaningless AM/PM.
 - `saveDispatches` upserts each call by received time, type and address, and moves `lastSeenAt` forward with `$max`. "Active now" means the calls whose `lastSeenAt` equals the newest one.
+- "Active now" and the map always show HPD's latest update. The history below them (the stat tiles and both charts) covers a date range from the date filter: the last 7 days by default.
 - `geocodePlaces` follows Nominatim's usage policy: at most one request per second, a User-Agent naming checkdakine.com, and every result cached in `GeocodedPlace`, misses included. It makes at most 30 lookups per run, bounded to Oahu. HPD's masked house numbers are rebuilt first: `51XX` is the 5100 block, and `911200` is the zone-lot number 91-1200.
 
 **News and X** (`services/news/`).
@@ -98,6 +99,10 @@ Anything new that reads arrests should follow the same rules. `test/arrestCards.
 - `https://checkdakine.com` is written in two places: `head.ejs` (canonical and Open Graph URLs, always without the query string) and `geocodePlaces.js` (the User-Agent). Change both together.
 - Use escaped `<%= %>` for data; `<%-` is only for `include`. Server data reaches client JS through escaped `data-*` attributes; `data-calls` carries the map's JSON.
 - Charts are server-rendered partials (`barList`, `columnChart`, `trendChart`, `officerUnits`), each with a `tableView` twin for screen readers. `dashboardCharts.js` only sets each bar's size, from `data-share` through the `--barShare` custom property.
+- The date filter is shared: `partials/dateFilter.ejs`, `validateDateRange`, and `services/dateRanges.js` (the range label and the one-click preset links).
+  - The home page shows it on the blue band, with all time as the default.
+  - The Dispatches history passes `filterAction`, `fallbackMessage`, and `onLight` for the light version, with the last 7 days as the default.
+  - Ranges are whole Hawaii days, and can't start or end after today.
 - `services/chartRows.js` shapes the rows. `toTopRows` folds small rows into one "All others" bar, which suits a short tail (ethnicities). `toTopBars` suits a long tail (a week of dispatch call types): bars for the most common, the rest summed up in a line under the chart, and every row in the table, so no bar dwarfs the others.
 - Pages work without JavaScript, and scripts only add to them. On Arrests, "Load more" is a link and Search applies the filters. `arrestFeed.js` adds infinite scroll and applies a filter as soon as it changes, by fetching the server-rendered page and moving its elements in, never HTML strings.
 
