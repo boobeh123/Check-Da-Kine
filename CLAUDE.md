@@ -36,7 +36,10 @@ npm run create-user -- --email someone@example.com         # invite-only login, 
 ```
 
 - No linter or formatter is set up. Match the style of the file you're editing.
-- Node 22.13 or newer (`engines`); pdfjs-dist 6 needs it.
+- Node is pinned exactly in `engines`: 24.22.1, the Oct 21 2026 security release. pdfjs-dist 6 needs 22.13 or newer anyway.
+  - Railway's builder must be Railpack, a setting in its dashboard, for every service built from this repo. Nixpacks only honours the major version.
+  - Bump the pin for each Node security release, never back to a range. `test/requestBodies.test.js` fails on a range.
+  - The server's startup line prints the running version.
 - Copy `.env.example` to `.env` in the repo root. The server won't start without `SESSION_SECRET`. `npm run scrape` needs the three Cloudinary variables unless it's given `--skip-upload`. The website and `npm run reparse` need `CLOUDINARY_CLOUD_NAME` and `CLOUDINARY_API_SECRET` to sign links to the private archive: without them, logged-in users get HPD's link instead, and reparse can't read logs HPD no longer lists. `scrape-news` reads X only when `X_BEARER_TOKEN` is set, since X bills per post read. On Railway, `NODE_ENV=production` turns on secure cookies and the CSP's `upgrade-insecure-requests`.
 - The scrapers and `reparse` write to whatever `DB_STRING` points at, and `reparse` replaces every arrest record. Don't run them against the production database unless Bobby asks.
 - The first OCR run downloads Tesseract's English model from the jsDelivr CDN into `tessdataCache/` (gitignored).
@@ -47,7 +50,7 @@ npm run create-user -- --email someone@example.com         # invite-only login, 
 
 Requests go `routes/` → `middleware/` (validators, the login rate limiter) → `controller/` → `services/` → `model/`, and render `views/*.ejs`. Controllers are thin: queries and data shaping live in `services/`, which the jobs in `jobs/` share.
 
-**server.js** follows the order in Bobby's standards: dotenv, `trust proxy`, helmet, morgan, body parsers, static files, sessions (connect-mongo on Mongoose's client), Passport, flash and locals, routes, 404, error handler. It listens only after MongoDB connects.
+**server.js** follows the order in Bobby's standards: dotenv, `trust proxy`, helmet, morgan, body parsers (both with `inflate: false`, so a compressed request body gets a 415; no browser sends one, and decompressing it reached the Brotli bug fixed in the Oct 2026 Node security release), static files, sessions (connect-mongo on Mongoose's client), Passport, flash and locals, routes, 404, error handler. It listens only after MongoDB connects.
 - `trust proxy` is 1 because the site is served straight from Railway's edge. If a CDN is ever put in front, add a hop, or the login rate limiter will count the CDN's address instead of each visitor's.
 - The CSP's `img-src` lists each outside image host: Cloudinary, OpenStreetMap's tiles, honolulupd.org and pbs.twimg.com. `script-src` is helmet's default `'self'`; Leaflet is served from `node_modules/leaflet/dist` at `/vendor/leaflet`.
 - A visitor has no session, and no cookie, until something is saved to it (a login, or a flash message). `saveUninitialized` is false, and reading a flash type never writes to the session.

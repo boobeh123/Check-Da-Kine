@@ -52,9 +52,12 @@ app.use(
 // 3. Logging
 app.use(morgan(isProduction ? 'combined' : 'dev'));
 
-// 4. Body parsing
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
+// 4. Body parsing. inflate: false refuses a compressed request body with a 415. Otherwise
+// body-parser decompresses gzip and Brotli bodies through Node's zlib, where the Oct 21 2026 Node
+// security release fixed a Brotli bug that let crafted data run code. No browser compresses a form
+// post or a fetch() body.
+app.use(express.urlencoded({ extended: false, inflate: false }));
+app.use(express.json({ inflate: false }));
 
 // 5. Static files: before sessions, so asset requests don't touch the session store.
 // Leaflet (the Dispatches map) is served from our own site, so no outside script is loaded.
@@ -122,7 +125,8 @@ app.use((err, req, res, next) => {
 
 clientPromise
   .then(() => {
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    // The Node version shows in Railway's deploy log, to confirm the pin in package.json's engines
+    app.listen(PORT, () => console.log(`Server running on port ${PORT} with Node ${process.version}`));
   })
   .catch((err) => {
     console.error('Database connection failed:', err);
