@@ -17,7 +17,7 @@
   "license": "UNLICENSED",
   "type": "commonjs",
   "engines": {
-    "node": ">=22.13"
+    "node": "24.22.1"
   },
   "dependencies": {
     "@napi-rs/canvas": "^1.0.9",
