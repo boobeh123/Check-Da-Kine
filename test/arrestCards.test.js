@@ -4,6 +4,7 @@ const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
 const cloudinary = require('../config/cloudinary');
 const { toCard } = require('../services/arrests/listArrests');
+const { agencies } = require('../services/agencies');
 
 // Made-up credentials. Links are signed locally, so nothing is sent anywhere.
 cloudinary.config({ cloud_name: 'example', api_key: '000', api_secret: 'test-secret' });
@@ -63,5 +64,53 @@ describe('toCard', () => {
   it("links HPD's own copy when the log wasn't archived", () => {
     const card = toCard({ ...record, lastSeenIn: { ...record.lastSeenIn, pdfUrl: undefined } }, true);
     assert.equal(card.source.url, record.lastSeenIn.sourceUrl);
+  });
+});
+
+describe('toCard for a Big Island arrest', () => {
+  // The same made-up arrest, as the Big Island's booking logs print it: a hometown instead of a
+  // location, bail on each charge, and the log archived in the Big Island's own folder
+  const bookingLog = 'Media-Booking-Report_2026-10-24-05-58-36.pdf';
+  const bigIslandRecord = {
+    ...record,
+    residence: 'HILO',
+    offenses: [{ ...record.offenses[0], location: undefined, releaseInfo: 'Released to District CT', bailSet: 1000, bailPosted: 0 }],
+    lastSeenIn: {
+      fileName: bookingLog,
+      publishedAt: new Date('2026-10-24T15:58:36.000Z'),
+      pdfUrl: `https://res.cloudinary.com/example/raw/authenticated/v1790000000/checkDaKine/bigIslandBookings/${bookingLog}`,
+      sourceUrl: `https://www.hawaiipolice.gov/wp-content/uploads/bookingLogs/Media%20Booking%20Report_2026-10-24-05-58-36.pdf`,
+    },
+  };
+
+  it('gives a guest no names, no hometown and no link to the booking log', () => {
+    const card = toCard(bigIslandRecord, false, agencies.bigIsland);
+    assert.equal(card.hometown, undefined);
+    assert.ok(!card.source);
+
+    const everything = JSON.stringify(card);
+    ['DOE', 'OFFICER, TEST', 'HILO', 'Booking'].forEach((hidden) => {
+      assert.ok(!everything.includes(hidden), `a guest's card includes "${hidden}"`);
+    });
+  });
+
+  it("gives a logged-in user the hometown, the bail, and a signed link into the Big Island's folder", () => {
+    const card = toCard(bigIslandRecord, true, agencies.bigIsland);
+    assert.equal(card.hometown, 'HILO');
+    assert.ok(card.offenses[0].fields.some(([label, value]) => label === 'Bail' && value === '$1,000 set'));
+    assert.match(card.source.url, /\/raw\/authenticated\/s--[\w-]{8}--\/.*checkDaKine\/bigIslandBookings\/Media-Booking-Report/);
+  });
+
+  it('words bail that was posted, and bail that was never set', () => {
+    const bailOf = (bailSet, bailPosted) => {
+      const card = toCard({ ...bigIslandRecord, offenses: [{ ...bigIslandRecord.offenses[0], bailSet, bailPosted }] }, false, agencies.bigIsland);
+      return card.offenses[0].fields.find(([label]) => label === 'Bail')?.[1];
+    };
+    assert.equal(bailOf(2000, 2000), '$2,000 set, $2,000 posted');
+    assert.equal(bailOf(0, 0), 'None set');
+  });
+
+  it("shows no bail on an Oʻahu card, whose logs don't print it", () => {
+    assert.ok(!toCard(record, true).offenses[0].fields.some(([label]) => label === 'Bail'));
   });
 });

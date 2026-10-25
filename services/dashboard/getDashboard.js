@@ -1,8 +1,7 @@
-// Builds everything the dashboard shows for one date range. Only counts leave this
+// Builds everything an island's stats page shows for one date range. Only counts leave this
 // module; arrestee and officer names never do.
 
-const ArrestLog = require('../../model/ArrestLog');
-const ArrestRecord = require('../../model/ArrestRecord');
+const { agencies } = require('../agencies');
 const { withShares, toTopRows } = require('../chartRows');
 const { normalizeOfficer } = require('../arrests/normalizeNames');
 const { findStaleness } = require('../staleness');
@@ -21,9 +20,6 @@ const ageBands = [
 ];
 
 const shownEthnicities = 10; // The rest fold into one "All others" bar
-
-// HPD publishes a log every 6 hours, so this allows for one arriving a little late
-const staleAfterHours = 8;
 
 const percentOf = (count, total) => (total > 0 ? Math.round((count / total) * 100) : 0);
 
@@ -91,8 +87,8 @@ const toOfficerGroups = (rows) => {
   }));
 };
 
-const getArrestStats = async (from, until) => {
-  const [facets] = await ArrestRecord.aggregate([
+const getArrestStats = async (Record, from, until) => {
+  const [facets] = await Record.aggregate([
     { $match: { arrestedAt: { $gte: from, $lt: until } } },
     {
       $facet: {
@@ -156,10 +152,10 @@ const buildTrend = (dayCounts, range, span, today) => {
 };
 
 // First and last days with arrests, or null before the first import
-const getDataSpan = async () => {
+const getDataSpan = async (Record) => {
   const [first, last] = await Promise.all([
-    ArrestRecord.findOne().sort({ arrestedAt: 1 }).select('arrestedAt').lean(),
-    ArrestRecord.findOne().sort({ arrestedAt: -1 }).select('arrestedAt').lean(),
+    Record.findOne().sort({ arrestedAt: 1 }).select('arrestedAt').lean(),
+    Record.findOne().sort({ arrestedAt: -1 }).select('arrestedAt').lean(),
   ]);
   if (!first) return null;
 
@@ -168,11 +164,12 @@ const getDataSpan = async () => {
   return { firstDay, lastDay, label: `${formatDay(firstDay)} to ${formatDay(lastDay)}` };
 };
 
-// start and end: YYYY-MM-DD strings, already validated, or undefined for the defaults
-const getDashboard = async ({ start, end }) => {
+// start and end: YYYY-MM-DD strings, already validated, or undefined for the defaults.
+// agency: the island (services/agencies.js), Oʻahu by default.
+const getDashboard = async ({ start, end, agency = agencies.oahu }) => {
   const [span, lastLog] = await Promise.all([
-    getDataSpan(),
-    ArrestLog.findOne({ status: 'parsed' }).sort({ publishedAt: -1 }).select('publishedAt').lean(),
+    getDataSpan(agency.Record),
+    agency.Log.findOne({ status: 'parsed' }).sort({ publishedAt: -1 }).select('publishedAt').lean(),
   ]);
 
   const today = todayInHawaii();
@@ -181,16 +178,20 @@ const getDashboard = async ({ start, end }) => {
   const range = describeRange(rangeStart, rangeEnd);
 
   // The end day counts in full, so the range runs until the start of the next day
-  const { dayCounts, ...stats } = await getArrestStats(startOfHawaiiDay(rangeStart), startOfHawaiiDay(addDays(rangeEnd, 1)));
+  const { dayCounts, ...stats } = await getArrestStats(
+    agency.Record,
+    startOfHawaiiDay(rangeStart),
+    startOfHawaiiDay(addDays(rangeEnd, 1))
+  );
 
   return {
     range,
-    // All time is the home page's default
-    presets: buildPresets({ path: '/', range, firstDay: span?.firstDay, today, defaultLabel: 'All time' }),
+    // All time is every stats page's default
+    presets: buildPresets({ path: agency.paths.stats, range, firstDay: span?.firstDay, today, defaultLabel: 'All time' }),
     span,
     today,
     lastUpdated: lastLog ? formatDateTime(lastLog.publishedAt) : null,
-    stale: lastLog ? findStaleness(lastLog.publishedAt, staleAfterHours) : null,
+    stale: lastLog ? findStaleness(lastLog.publishedAt, agency.staleAfterHours) : null,
     trend: buildTrend(dayCounts, { start: rangeStart, end: rangeEnd }, span, today),
     ...stats,
   };

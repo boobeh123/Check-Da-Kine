@@ -2,7 +2,7 @@
 // every arresting officer, A to Z with arrest counts. OCR variants of one name ("THEFT 4",
 // "THEFT 4.") become one option that matches all of them.
 
-const ArrestRecord = require('../../model/ArrestRecord');
+const { agencies } = require('../agencies');
 const { normalizeCharge, normalizeOfficer } = require('./normalizeNames');
 
 // groups: [{ _id: printed name, arrests: [arrest ids] }] -> [{ value, label, count, variants }].
@@ -30,9 +30,10 @@ const toOptions = (groups, normalize) => {
 
 const namesAndArrests = (field) => [{ $group: { _id: `$offenses.${field}`, arrests: { $addToSet: '$_id' } } }];
 
-// officers is null for guests: officer names are never read for them
-const getFilterOptions = async ({ showNames }) => {
-  const [facets] = await ArrestRecord.aggregate([
+// officers is null for guests: officer names are never read for them. agency: the island
+// (services/agencies.js), Oʻahu by default.
+const getFilterOptions = async ({ showNames, agency = agencies.oahu }) => {
+  const [facets] = await agency.Record.aggregate([
     { $unwind: '$offenses' },
     {
       $facet: {
