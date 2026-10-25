@@ -16,7 +16,8 @@ const privateUrl = `https://res.cloudinary.com/example/raw/authenticated/v179000
 const signedLinkPattern = /^https:\/\/res\.cloudinary\.com\/example\/raw\/authenticated\/s--[\w-]{8}--\//;
 
 describe('archivePdf', () => {
-  it('uploads each copy as private', async () => {
+  // Runs archivePdf against a stand-in for Cloudinary's upload stream; returns the upload options
+  const uploadOptionsFor = async (...args) => {
     const realUploadStream = cloudinary.uploader.upload_stream;
     let options;
     cloudinary.uploader.upload_stream = (uploadOptions, done) => {
@@ -24,14 +25,25 @@ describe('archivePdf', () => {
       return { end: () => done(null, { secure_url: privateUrl }) };
     };
     try {
-      assert.equal(await archivePdf(Buffer.from('%PDF-'), fileName), privateUrl);
+      assert.equal(await archivePdf(Buffer.from('%PDF-'), ...args), privateUrl);
     } finally {
       cloudinary.uploader.upload_stream = realUploadStream;
     }
+    return options;
+  };
 
+  it('uploads each copy as private', async () => {
+    const options = await uploadOptionsFor(fileName);
     assert.equal(options.type, 'authenticated');
     assert.equal(options.resource_type, 'raw');
     assert.equal(options.public_id, `checkDaKine/arrestLogs/${fileName}`);
+  });
+
+  it("keeps another island's copies in its own folder", async () => {
+    const bookingLog = 'Media-Booking-Report_2026-10-24-05-58-36.pdf';
+    const options = await uploadOptionsFor(bookingLog, { folder: 'checkDaKine/bigIslandBookings' });
+    assert.equal(options.public_id, `checkDaKine/bigIslandBookings/${bookingLog}`);
+    assert.equal(options.type, 'authenticated');
   });
 });
 
@@ -40,6 +52,14 @@ describe('archiveLink', () => {
     const link = archiveLink({ fileName, pdfUrl: privateUrl });
     assert.match(link, signedLinkPattern);
     assert.ok(link.includes(`/checkDaKine/arrestLogs/${fileName}`));
+  });
+
+  it("signs a link into another island's folder", () => {
+    const bookingLog = 'Media-Booking-Report_2026-10-24-05-58-36.pdf';
+    const pdfUrl = `https://res.cloudinary.com/example/raw/authenticated/v1790000000/checkDaKine/bigIslandBookings/${bookingLog}`;
+    const link = archiveLink({ fileName: bookingLog, pdfUrl }, { folder: 'checkDaKine/bigIslandBookings' });
+    assert.match(link, signedLinkPattern);
+    assert.ok(link.includes(`/checkDaKine/bigIslandBookings/${bookingLog}`));
   });
 
   it('keeps the plain URL of a copy that is still public', () => {

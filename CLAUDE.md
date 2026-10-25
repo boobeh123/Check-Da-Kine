@@ -11,7 +11,7 @@ The repo deploys as four Railway services:
 | Service | Command | Schedule |
 |---|---|---|
 | The website (Express 5, EJS, MongoDB) | `npm start` | always on |
-| Arrest logs: download HPD's PDFs, archive them to Cloudinary, read them with OCR | `npm run scrape` | hourly at :40 |
+| Arrest logs: download HPD's PDFs (Oʻahu, read with OCR) and the Hawaiʻi Police Department's booking logs (the Big Island, read from their text), archive them to Cloudinary, save the arrests | `npm run scrape` | hourly at :40 |
 | Dispatch calls: save HPD's open calls and place them on the map | `npm run scrape-dispatches` | every 10 minutes |
 | News: HPD's latest releases from its WordPress API, and its posts on X | `npm run scrape-news` | hourly |
 
@@ -30,7 +30,8 @@ npm test                                                   # every test; no data
 node --test test/validation.test.js                        # one file
 node --test --test-name-pattern="toHref" test/*.test.js    # tests whose name matches
 npm run parse -- path/to/Arrest_Log.pdf                    # OCR a local PDF into JSON beside it; no database
-npm run scrape -- --limit 2 --skip-upload                  # import HPD's 2 newest logs without archiving them
+npm run scrape -- --limit 2 --skip-upload                  # import each island's 2 newest logs without archiving them
+npm run scrape -- --island big-island --skip-upload        # just the Big Island (seconds; Oʻahu's OCR takes minutes per log)
 npm run reparse                                            # re-read every stored log, replace all arrest records
 npm run create-user -- --email someone@example.com         # invite-only login, password printed once; --reset for a new one
 ```
@@ -82,6 +83,18 @@ Anything new that reads arrests should follow the same rules. `test/arrestCards.
 - `dedupeKey` is the arrest time, the incident (the lowest report number without its `-NNN` suffix), the sex and the age. Names are left out on purpose: OCR noise in a name differs from log to log. `saveRecord` lets the newest log's version win, by `lastSeenAt`.
 - After any change to parsing or to the key, run `npm run reparse`. It rebuilds into `arrestrecords_rebuild` and swaps that in with `$out`, which keeps the live collection's indexes. It changes nothing if a download fails or the scraper imports a log meanwhile.
 
+**Big Island booking logs** (`services/bigIsland/`). The Hawaiʻi Police Department posts one "Media Booking Log" PDF each morning at https://www.hawaiipolice.gov/news-and-media/booking-logs/, covering about 48 hours, and lists only about 8 days of them. `npm run scrape` imports them after Oʻahu's logs, each island on its own; `--island` picks one.
+- The PDFs are Crystal Reports output with a real text layer, so `services/pdfText.js` reads positioned text pieces with pdf.js. No OCR.
+- `bookingLayout.js` holds the column positions. `parseBookingLog` groups the pieces into rows (across page breaks), starts a booking at a time in the Arrested On column and a charge at a report number, joins wrapped charge text, and drops "Released By", a name nothing uses.
+- Every log prints its own totals ("Total OTNs Records Found", "Total Charge Records Found"). A mismatch, or no totals at all, means the layout changed: the log is marked `failed` with nothing saved, and retried on the next run. Odd rows the log itself prints (a charge above the first booking) are warnings saved on the log.
+- `toBookingFields` maps a booking onto the Oʻahu record shape. The arresting officer and release time are the booking's, copied onto each charge. A statute is split off the charge text ("291E-0061 OVUII" -> "HRS 291E-0061" and "OVUII"); a charge printed without one keeps its whole text and isn't flagged.
+- `dedupeKey` is `otn:<OTN>`, the statewide Offense Tracking Number printed with each booking, so the overlapping logs merge exactly.
+- Bookings go in their own collections, `BigIslandBookingLog` and `BigIslandArrest`, which reuse the Oʻahu schemas, so no Oʻahu page or count can include them. The schema's `ref: 'ArrestLog'` means populating a Big Island record's log needs `{ model: BigIslandBookingLog }`.
+- `residence` (the arrestee's town; "Address of Arrestee" in the log) is `select: false` like `name`: in a small town, town, age and sex can point to one person. Logged-in users only.
+- Copies are archived privately under `checkDaKine/bigIslandBookings/` (`archivePdf`'s `folder` option). Stored file names swap the printed name's spaces for dashes.
+- When inspecting real logs, never print a person's name: mask every letter in the name, officer, released-by and hometown columns by position (x 180–345 and 480–670), not by matching "LAST, FIRST".
+- Kauaʻi publishes a similar daily PDF, but its site answers scripts with a 403, so it isn't imported. Maui County publishes no arrest logs online.
+
 **Dispatches** (`services/dispatches/`).
 - HPD's page lists only open calls, despite its file name, and prints 24-hour times followed by a meaningless AM/PM.
 - `saveDispatches` upserts each call by received time, type and address, and moves `lastSeenAt` forward with `$max`. "Active now" means the calls whose `lastSeenAt` equals the newest one.
@@ -99,7 +112,7 @@ Anything new that reads arrests should follow the same rules. `test/arrestCards.
 
 **Views and client JS.**
 - `partials/head.ejs` takes `title`, `description`, `styles` and `scripts` from the controller. Scripts load in `<head>` with `defer`, in the order given: Leaflet before `dispatchMap.js`.
-- `https://checkdakine.com` is written in two places: `head.ejs` (canonical and Open Graph URLs, always without the query string) and `geocodePlaces.js` (the User-Agent). Change both together.
+- `https://checkdakine.com` is written in two places: `head.ejs` (canonical and Open Graph URLs, always without the query string) and `services/userAgent.js` (the User-Agent the geocoder and the Big Island fetches send). Change both together.
 - Use escaped `<%= %>` for data; `<%-` is only for `include`. Server data reaches client JS through escaped `data-*` attributes; `data-calls` carries the map's JSON.
 - Charts are server-rendered partials (`barList`, `columnChart`, `trendChart`, `officerUnits`), each with a `tableView` twin for screen readers. `dashboardCharts.js` only sets each bar's size, from `data-share` through the `--barShare` custom property.
 - The date filter is shared: `partials/dateFilter.ejs`, `validateDateRange`, and `services/dateRanges.js` (the range label and the one-click preset links).
@@ -111,7 +124,7 @@ Anything new that reads arrests should follow the same rules. `test/arrestCards.
 
 ## Tests
 
-`test/*.test.js` use `node:test` and `node:assert/strict` on pure functions, validators, and controllers given stand-in requests, so they need no database or network. `test/fixtures/` holds trimmed copies of HPD's dispatch page and news API response, and made-up X API responses. The validator tests run chains against a plain `{ query, body }` object, which doesn't reproduce Express 5's read-only `req.query`, so check cleaned values through `matchedData`, as they do.
+`test/*.test.js` use `node:test` and `node:assert/strict` on pure functions, validators, and controllers given stand-in requests, so they need no database or network. `test/fixtures/` holds trimmed copies of HPD's dispatch page and news API response, and made-up X API responses and Big Island booking-log text pieces (real column positions, invented people). `test/bookingRegression.test.js` reads the real booking logs in the gitignored `samplePdfs/bigIsland/` and checks each against its printed totals; like the OCR regression test, it skips itself when they're absent. The validator tests run chains against a plain `{ query, body }` object, which doesn't reproduce Express 5's read-only `req.query`, so check cleaned values through `matchedData`, as they do.
 
 ## Conventions
 
