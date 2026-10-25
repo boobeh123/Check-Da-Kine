@@ -10,17 +10,25 @@ const offenseSchema = new mongoose.Schema(
     officer: String,
     courtInfo: String, // "HON DIST - ALAKEA / 7D 10/22/2026 09:30"
     releasedAt: Date,
-    releaseInfo: String, // "RBL / 250", "500", "OTH"
+    releaseInfo: String, // "RBL / 250", "500", "OTH"; Big Island: "Released to District CT"
+    // Big Island logs only: the bail set and posted for this charge, in dollars
+    bailSet: { type: Number, min: 0 },
+    bailPosted: { type: Number, min: 0 },
   },
   { _id: false }
 );
 
-// One arrest, merged across every log that listed it
+// One arrest, merged across every log that listed it. The Big Island's arrests use this same
+// schema in their own collection (BigIslandArrest.js).
 const arrestRecordSchema = new mongoose.Schema(
   {
     dedupeKey: { type: String, required: true, unique: true },
     arrestedAt: { type: Date, required: true, index: true },
     name: { type: String, select: false }, // Left out of queries unless asked for; shown only to logged-in users
+    // Big Island logs only: the arrestee's town, which can point to one person in a small
+    // town, so it's left out of queries like name. And the arrest's Offense Tracking Number.
+    residence: { type: String, maxLength: 100, select: false },
+    otn: { type: String, maxLength: 20 },
     ethnicities: [String],
     sex: { type: String, enum: ['M', 'F'] },
     age: { type: Number, min: 18, max: 122 },
