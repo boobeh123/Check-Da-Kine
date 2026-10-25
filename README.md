@@ -18,14 +18,14 @@ The Honolulu Police Department publishes the data it logs for each arrest as PDF
 <br />
 This project's goal is to display that data with a modern interface and user experience.
 <br />
-[HPD's published arrest logs](https://www.honolulupd.org/information/arrest-logs/) · [HPD's active dispatch calls](https://www.honolulupd.org/wp-content/hpd/cfs/Incidents_past_24_hours.html)
+[HPD's published arrest logs](https://www.honolulupd.org/information/arrest-logs/) · [HPD's active dispatch calls](https://www.honolulupd.org/wp-content/hpd/cfs/Incidents_past_24_hours.html) · [The Big Island's booking logs](https://www.hawaiipolice.gov/news-and-media/booking-logs/)
 
 ### Why this exists:
 I wanted to see what JavaScript's ecosystem is capable of, since it's my strongest language.<br /><br />
 The Attorney General's Office provides [annual reports](https://ag.hawaii.gov/cpja/rs/cih/) as to the state of crime in Hawaii. This project provides a mechanism to validate these reports, track the numbers daily, and keep an archive of the raw data.
 
 ## How It Works
-Using a combination of image cropping and OCR, we extract data about each arrest from every arrest log HPD publishes (four a day). A second scraper records HPD's active dispatch calls every 10 minutes and places them on a map, and a third picks up HPD's latest news releases and posts on X every hour.
+Using a combination of image cropping and OCR, we extract data about each arrest from every arrest log HPD publishes (four a day). The same scraper reads the Big Island's daily booking logs too, which carry real text. A second scraper records HPD's active dispatch calls every 10 minutes and places them on a map, and a third picks up HPD's latest news releases and posts on X every hour.
 
 ### Features
 * Full-stack web application deployed with Railway
@@ -83,6 +83,17 @@ We then save the arrests to **MongoDB** with **Mongoose**. Logs overlap (each co
 
 When the parser improves, `npm run reparse` re-reads every stored log from its archived copy and rebuilds all the arrests. It builds in a separate collection and swaps it in only at the end, so if anything goes wrong, nothing changes ([rebuildArrestRecords.js](services/arrestLog/rebuildArrestRecords.js)).
 
+#### Big Island booking logs
+
+The same `npm run scrape` run also imports the [Hawaiʻi Police Department's booking logs](https://www.hawaiipolice.gov/news-and-media/booking-logs/) for the Big Island ([importBookingLogs.js](services/bigIsland/importBookingLogs.js)). The department posts one each morning covering about 48 hours, and lists only about 8 days of them, so each is imported, and archived privately to **Cloudinary**, as soon as it appears.
+
+1. These PDFs carry real text, so **pdf.js** reads each piece of text with its position on the page. No OCR is needed ([pdfText.js](services/pdfText.js))
+2. The pieces are sorted into rows and columns: each booking (arrest time, sex, age, race, hometown, and arresting officer) and its charges (report number, statute and charge, bail, release, and court date) ([parseBookingLog.js](services/bigIsland/parseBookingLog.js))
+3. Every log prints how many bookings and charges it holds. A log that doesn't add up, a sign its layout changed, is retried rather than saved
+4. Each booking carries its statewide Offense Tracking Number (OTN), so a booking listed in two overlapping logs is saved once, with the newer version winning ([toBookingFields.js](services/bigIsland/toBookingFields.js))
+
+Big Island arrests are kept apart from Oʻahu's, ready for Big Island pages. Kauaʻi publishes a similar daily log, but its site blocks automated downloads, and Maui County doesn't publish arrest logs online.
+
 #### Dispatch calls
 
 A second Railway cron service runs `npm run scrape-dispatches` every 10 minutes ([jobs/scrapeDispatches.js](jobs/scrapeDispatches.js)):
@@ -117,10 +128,10 @@ The site and the three scrapers are four services on Railway, all deployed from 
 |---|---|
 | `npm run dev` | Runs the website locally, restarting when a file changes |
 | `npm start` | Runs the website (Railway's web service) |
-| `npm run scrape` | Imports new arrest logs (Railway cron, every hour at 40 past) |
+| `npm run scrape` | Imports new arrest logs for Oʻahu and booking logs for the Big Island (Railway cron, every hour at 40 past). `-- --island big-island` or `-- --island oahu` imports just one |
 | `npm run scrape-dispatches` | Checks HPD's dispatch calls (Railway cron, every 10 minutes) |
 | `npm run scrape-news` | Checks HPD's latest news releases, and its X posts when `X_BEARER_TOKEN` is set (Railway cron, every hour) |
 | `npm run reparse` | Rebuilds every stored arrest with the current parser |
 | `npm run create-user -- --email you@example.com` | Creates an invite-only login and prints its password once (`--reset` for a new password) |
 | `npm run parse -- path/to/Arrest_Log.pdf` | Tries the parser on a downloaded PDF and saves the results as JSON next to it |
-| `npm test` | Runs the unit tests in `test/` with Node's built-in test runner. The OCR check re-reads the PDFs in `samplePdfs/` against the JSON saved beside them, and skips itself when that folder is missing |
+| `npm test` | Runs the unit tests in `test/` with Node's built-in test runner. The OCR check re-reads the PDFs in `samplePdfs/` against the JSON saved beside them, and the booking-log check reads the Big Island PDFs in `samplePdfs/bigIsland/` against their own totals; each skips itself when its folder is missing |
