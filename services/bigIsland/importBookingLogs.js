@@ -35,8 +35,9 @@ const saveBookings = async (bookings, log) => {
   return { outcomes, warnings };
 };
 
-// A log whose bookings don't add up to the totals it prints is marked 'failed', with nothing
-// saved, and retried on the next run while the department still lists it (about 8 days)
+// A log that doesn't add up (a booking it prints went unread, or its charges don't match its
+// totals) is marked 'failed', with nothing saved, and retried on the next run while the
+// department still lists it (about 8 days)
 const importOneLog = async (listedLog, { upload }) => {
   const log = (await BigIslandBookingLog.findOne({ fileName: listedLog.fileName })) ?? new BigIslandBookingLog(listedLog);
   if (log.isNew) await log.save(); // Records point at the log, so it needs an _id first

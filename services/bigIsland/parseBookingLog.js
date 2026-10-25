@@ -58,19 +58,22 @@ const isOnly = (fields, allowed) => Object.keys(fields).every((field) => allowed
 // release, courtCode, courtDate }], problems }, with the printed text. "Released By" is dropped
 // here: it names someone, and nothing uses it.
 //   warnings: odd rows the log itself prints, like a charge above the first booking (the Oct 19
-//     2026 log had one, and its own totals left it out). The bookings are still good.
-//   errors: the bookings found don't match the totals the log prints, or there are no totals,
-//     which means the layout changed and rows may be missing.
+//     2026 log had one, and its own totals left it out), or a booking count the log got wrong.
+//     The bookings are still good.
+//   errors: the bookings or charges found don't match what the log prints, or there are no
+//     totals, which means the layout changed and rows may be missing.
 const parseBookingLog = (items) => {
   const bookings = [];
   const warnings = [];
   const errors = [];
   const totals = { bookings: undefined, charges: undefined, byDay: [] };
+  let otnLines = 0; // Every booking prints one "Charges for OTN" line, however its row reads
   let booking = null;
   let charge = null; // The charge whose text may wrap onto the next rows
 
   toRows(items).forEach((row) => {
     const otnItem = row.items.find((item) => otnPattern.test(item.s));
+    if (otnItem) otnLines += 1;
     const startsBooking = row.items.some((item) => toField(bookingColumns, item.x) === 'arrestedOn' && dateTimePattern.test(item.s));
     const startsCharge = row.items.some((item) => toField(chargeColumns, item.x) === 'reportNumber' && reportNumberPattern.test(item.s));
 
@@ -128,9 +131,20 @@ const parseBookingLog = (items) => {
   // The log prints its own counts, which catches a layout change that would drop rows
   const expectedBookings = totals.bookings ?? (totals.byDay.length > 0 ? totals.byDay.reduce((sum, n) => sum + n, 0) : undefined);
   const chargeCount = bookings.reduce((sum, found) => sum + found.charges.length, 0);
-  if (expectedBookings === undefined) errors.push("the log's booking count wasn't found; its layout may have changed");
-  else if (expectedBookings !== bookings.length) errors.push(`found ${bookings.length} bookings, but the log lists ${expectedBookings}`);
-  if (totals.charges !== undefined && totals.charges !== chargeCount) {
+  const chargesAddUp = totals.charges !== undefined && totals.charges === chargeCount;
+  if (expectedBookings === undefined) {
+    errors.push("the log's booking count wasn't found; its layout may have changed");
+  } else if (expectedBookings !== bookings.length) {
+    // The log's own count can be wrong. The Oct 25 2026 log listed 10 bookings for Oct 24 but
+    // printed 9, each with its OTN line and charges, and every charge it counted. When every
+    // OTN line has its booking and the charges add up, nothing printed was missed.
+    if (chargesAddUp && bookings.length === otnLines) {
+      warnings.push(`the log lists ${expectedBookings} bookings but prints ${bookings.length}, each with its OTN line and charges, so all ${bookings.length} were read`);
+    } else {
+      errors.push(`found ${bookings.length} bookings, but the log lists ${expectedBookings}`);
+    }
+  }
+  if (totals.charges !== undefined && !chargesAddUp) {
     errors.push(`found ${chargeCount} charges, but the log lists ${totals.charges}`);
   }
 

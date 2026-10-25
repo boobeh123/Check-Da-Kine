@@ -101,6 +101,23 @@ describe('parseBookingLog', () => {
     assert.deepEqual(missing, ['found 2 bookings, but the log lists 3', 'found 3 charges, but the log lists 4']);
   });
 
+  it("still calls it an error when a booking it prints goes unread, though the charges add up", () => {
+    // An arrest time the pattern can't read: the booking's charge lands on the booking above
+    const unreadable = items.map((item) => (item.s === '10/23/26 11:00' && item.x === 36 ? { ...item, s: '10/23/26 11:0O' } : item));
+    const { bookings: found, errors: unread } = parseBookingLog(unreadable);
+    assert.equal(found.length, 2);
+    assert.deepEqual(unread, ['found 2 bookings, but the log lists 3']);
+  });
+
+  it("saves every booking, with a warning, when only the log's own booking count is off", () => {
+    // The Oct 25 2026 log listed one more booking than it printed. Here the log lists 4.
+    const miscounted = items.map((item) => (item.s === '3' && item.y === 460 ? { ...item, s: '4' } : item));
+    const result = parseBookingLog(miscounted);
+    assert.equal(result.bookings.length, 3);
+    assert.deepEqual(result.errors, []);
+    assert.deepEqual(result.warnings, ['the log lists 4 bookings but prints 3, each with its OTN line and charges, so all 3 were read']);
+  });
+
   it('calls it an error when there are no totals at all, which means the layout changed', () => {
     const { errors: noTotals } = parseBookingLog(items.filter((item) => !/^Total/.test(item.s)));
     assert.deepEqual(noTotals, ["the log's booking count wasn't found; its layout may have changed"]);
