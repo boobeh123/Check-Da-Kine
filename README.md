@@ -90,7 +90,7 @@ The same `npm run scrape` run also imports the [Hawaiʻi Police Department's boo
 
 1. These PDFs carry real text, so **pdf.js** reads each piece of text with its position on the page. No OCR is needed ([pdfText.js](services/pdfText.js))
 2. The pieces are sorted into rows and columns: each booking (arrest time, sex, age, race, hometown, and arresting officer) and its charges (report number, statute and charge, bail, release, and court date) ([parseBookingLog.js](services/bigIsland/parseBookingLog.js))
-3. Every log prints how many bookings and charges it holds. A log that doesn't add up, a sign its layout changed, is retried rather than saved
+3. Every log prints how many bookings and charges it holds. A log that doesn't add up, a sign its layout changed, is retried rather than saved. The department's own booking count is occasionally off by one, so when every booking it prints was read and the charges add up, the bookings are saved with a note on the log
 4. Each booking carries its statewide Offense Tracking Number (OTN), so a booking listed in two overlapping logs is saved once, with the newer version winning ([toBookingFields.js](services/bigIsland/toBookingFields.js))
 
 Big Island arrests are kept apart from Oʻahu's, in their own collections, so no Oʻahu page or count can include them; they have their own pages (below). Kauaʻi publishes a similar daily log, but its site blocks automated downloads, and Maui County doesn't publish arrest logs online.
