@@ -87,4 +87,12 @@ describe('toEthnicityGroup', () => {
     assert.equal(toEthnicityGroup('Unknown').key, 'other');
     assert.equal(toEthnicityGroup('Mi').key, 'other');
   });
+
+  it("puts the races the Big Island's booking logs print in the same groups", () => {
+    assert.equal(toEthnicityGroup('Other Pacific Islander').key, 'pacificIslander');
+    assert.equal(toEthnicityGroup('Asian Filipino').key, 'asian');
+    assert.equal(toEthnicityGroup('Asian Other').key, 'asian');
+    assert.equal(toEthnicityGroup('H-White/Latin, Hispanic').key, 'hispanic');
+    assert.equal(toEthnicityGroup('Puerto Rican').key, 'hispanic');
+  });
 });
