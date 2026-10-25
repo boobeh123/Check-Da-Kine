@@ -9,6 +9,7 @@ const { MongoStore } = require('connect-mongo'); // v6+
 const passport = require('passport');
 const connectDB = require('./config/database');
 const flash = require('./middleware/flash');
+const { agencies } = require('./services/agencies');
 
 // Sessions can't be signed without a secret; stop here rather than fail on the first login
 if (!process.env.SESSION_SECRET) {
@@ -27,6 +28,10 @@ const isProduction = process.env.NODE_ENV === 'production';
 // 1. Trust Railway's proxy: required for req.ip, rate limiting, and secure cookies
 app.set('trust proxy', 1);
 app.set('view engine', 'ejs');
+// The island every page is about, for the nav's Home and Arrests links. Another island's stats
+// and arrests pages pass their own. Set on app.locals, so even an error page rendered before
+// any middleware runs has one.
+app.locals.agency = agencies.oahu;
 
 // 2. Security headers: must come before everything else
 app.use(
@@ -102,6 +107,7 @@ app.use('/', require('./routes/indexRoutes'));
 app.use('/', require('./routes/authRoutes'));
 app.use('/arrests', require('./routes/arrestRoutes'));
 app.use('/dispatches', require('./routes/dispatchRoutes'));
+app.use('/big-island', require('./routes/bigIslandRoutes'));
 
 // 10. 404: after all routes
 app.use((req, res) => {

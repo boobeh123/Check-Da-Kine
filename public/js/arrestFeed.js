@@ -54,11 +54,13 @@ const fetchPage = async (url, signal) => {
   return new DOMParser().parseFromString(await response.text(), 'text/html');
 };
 
-// The address the Search button would go to, leaving out anything not chosen
+// The address the Search button would go to, leaving out anything not chosen. The form's
+// action is the island's Arrests page (/arrests or /big-island/arrests).
 const filteredUrl = () => {
+  const path = searchForm.getAttribute('action');
   const chosen = [...new FormData(searchForm)].filter(([, value]) => value.trim() !== '');
   const query = new URLSearchParams(chosen).toString();
-  return query ? `/arrests?${query}` : '/arrests';
+  return query ? `${path}?${query}` : path;
 };
 
 // What the status line says about new results: the summary, or the plain count

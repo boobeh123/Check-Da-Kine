@@ -796,6 +796,11 @@ Page band
   color: var(--colorOnPrimaryMuted);
 }
 
+/* The Oʻahu | Big Island switch above the heading, in the date filter's pill style */
+.islandSwitch {
+  margin-bottom: var(--spaceMd);
+}
+
 /* The first block below the band (stat tiles, a card, or a message) rises into it */
 .bandContent > :first-child {
   position: relative;
@@ -837,7 +842,9 @@ Date filter
   border-color: var(--colorOnPrimary);
 }
 
-.presetLink[aria-current='true'] {
+/* The chosen range, or the island you're on (the island switch marks its page) */
+.presetLink[aria-current='true'],
+.presetLink[aria-current='page'] {
   font-weight: 600;
   color: var(--colorPrimary);
   background-color: var(--colorOnPrimary);
@@ -1285,6 +1292,12 @@ Arrests
 .arrestNameMissing {
   font-weight: 400;
   font-style: italic;
+  color: var(--colorTextMuted);
+}
+
+/* The Big Island's logs print each arrestee's town; logged-in users only */
+.arrestHometown {
+  font-size: var(--fontSizeSm);
   color: var(--colorTextMuted);
 }
 

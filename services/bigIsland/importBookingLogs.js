@@ -6,12 +6,13 @@ const BigIslandBookingLog = require('../../model/BigIslandBookingLog');
 const BigIslandArrest = require('../../model/BigIslandArrest');
 const { archivePdf } = require('../arrestLog/archivePdf');
 const { saveRecord } = require('../arrestLog/saveRecord');
+const { agencies } = require('../agencies');
 const { readPdfText } = require('../pdfText');
 const { fetchLogList, downloadPdf } = require('./fetchBookingLogs');
 const { parseBookingLog } = require('./parseBookingLog');
 const { toBookingFields } = require('./toBookingFields');
 
-const archiveFolder = 'checkDaKine/bigIslandBookings';
+const { archiveFolder } = agencies.bigIsland;
 const errorMessageLength = 2000; // The log's errorMessage maxLength
 const warningLength = 500; // The log's warnings maxLength
 
@@ -100,4 +101,4 @@ const importBookingLogs = async ({ limit, upload }) => {
   return totals;
 };
 
-module.exports = { importBookingLogs, archiveFolder };
+module.exports = { importBookingLogs };

@@ -102,4 +102,12 @@ describe('toHref', () => {
   it('links to the plain feed when nothing is chosen', () => {
     assert.equal(toHref({}), '/arrests');
   });
+
+  it("keeps the Big Island's links on its own Arrests page", () => {
+    assert.equal(
+      toHref({ search: 'ovuii' }, record, '/big-island/arrests'),
+      '/big-island/arrests?q=ovuii&beforeTime=2026-09-27T01%3A48%3A00.000Z&beforeId=66f5a1b2c3d4e5f6a7b8c9d0'
+    );
+    assert.equal(toHref({}, undefined, '/big-island/arrests'), '/big-island/arrests');
+  });
 });

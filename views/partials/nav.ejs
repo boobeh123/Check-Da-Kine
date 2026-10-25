@@ -1,8 +1,9 @@
 <%
-  // Add a page here as each one is built
+  // Add a page here as each one is built. Home and Arrests lead to the island on screen's
+  // pages (agency: Oʻahu unless the page is another island's, set in server.js).
   const navLinks = [
-    { href: '/', label: 'Home' },
-    { href: '/arrests', label: 'Arrests' },
+    { href: agency.paths.stats, label: 'Home' },
+    { href: agency.paths.arrests, label: 'Arrests' },
     { href: '/dispatches', label: 'Dispatches' },
   ];
 %>
