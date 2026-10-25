@@ -6,7 +6,7 @@
   <p align="center">
     The original HPD Stats project was created in Python by <a href="https://www.github.com/tyliec">Tyliec</a>
     <br /><br />
-    Check Da Kine is our take on HPD Stats, rebuilt with JavaScript and its ecosystem, to track statistics on arrests by the Honolulu Police Department
+    Check Da Kine is our take on HPD Stats, rebuilt with JavaScript and its ecosystem, to track statistics on arrests by the Honolulu Police Department, and on the Big Island by the Hawaiʻi Police Department
     <br /><br />
     New domain: https://checkdakine.com/
     <br /><br />
@@ -41,7 +41,8 @@ Using a combination of image cropping and OCR, we extract data about each arrest
 * Arrest cards with infinite scroll that still works without JavaScript
 * Arrest search by charge, statute, location, or report number (MongoDB text index)
 * Arrest filters by charge & sex, plus arresting officer for logged-in users
-* Arrestee & officer names shown only to logged-in users
+* Arrestee & officer names, and Big Island hometowns, shown only to logged-in users
+* Big Island statistics & arrest cards from the Hawaiʻi Police Department's booking logs, with an Oʻahu | Big Island switch
 * Date range filters with Last 7 days, Last 30 days & All time presets, on the home page and the Dispatches history
 * Arrests-over-time chart with hover tooltips, grouped by day, week, or month
 * Active dispatch calls geocoded onto a map, linked to the call list
@@ -92,7 +93,7 @@ The same `npm run scrape` run also imports the [Hawaiʻi Police Department's boo
 3. Every log prints how many bookings and charges it holds. A log that doesn't add up, a sign its layout changed, is retried rather than saved
 4. Each booking carries its statewide Offense Tracking Number (OTN), so a booking listed in two overlapping logs is saved once, with the newer version winning ([toBookingFields.js](services/bigIsland/toBookingFields.js))
 
-Big Island arrests are kept apart from Oʻahu's, ready for Big Island pages. Kauaʻi publishes a similar daily log, but its site blocks automated downloads, and Maui County doesn't publish arrest logs online.
+Big Island arrests are kept apart from Oʻahu's, in their own collections, so no Oʻahu page or count can include them; they have their own pages (below). Kauaʻi publishes a similar daily log, but its site blocks automated downloads, and Maui County doesn't publish arrest logs online.
 
 #### Dispatch calls
 
@@ -118,6 +119,7 @@ HPD's website and X are checked separately, so a problem with one never stops th
 
 - **Home:** arrest statistics for a chosen date range, counted by MongoDB, with a chart of arrests over time in the Arrests tile. Below them, HPD's latest news releases and posts on X as cards linking to HPD's site and X, then charts by age, ethnicity, and officer. A notice appears if no new arrest log has arrived in 8 hours
 - **Arrests:** every arrest as a card, newest first, loading more as you scroll, and searchable by charge, statute, location, or report number (a MongoDB text index; names aren't searchable). Dropdowns filter by charge and sex, and logged-in users can also filter by arresting officer; OCR variants of a name are merged into one choice, and the officer filter is ignored on the server for guests, so an officer can't be tied to arrests without logging in ([filterOptions.js](services/arrests/filterOptions.js)). Arrestee and officer names are only shown to logged-in users; accounts are invite-only (**Passport**, created with `npm run create-user`)
+- **Big Island:** the same two pages for the Big Island's booking logs, at `/big-island` and `/big-island/arrests`, with an Oʻahu | Big Island switch at the top of the statistics and arrests pages, and the nav's Home and Arrests links follow the island you're on. Big Island cards add each charge's bail and, for logged-in users only, the arrestee's hometown. A notice appears if no new booking log has arrived in 30 hours. Each island's pages, data, and wording come from one entry in [agencies.js](services/agencies.js), so another island is one more entry
 - **Dispatches:** a **Leaflet** map and list of the calls HPD is handling now, linked so that pointing at a call in either one highlights it in the other, plus counts by call type and district for any date range (every day on record unless another is chosen). A notice appears if HPD's list hasn't changed in an hour
 
 #### Running it

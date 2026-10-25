@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-Check Da Kine (https://checkdakine.com) tracks arrests by the Honolulu Police Department (HPD) using data HPD publishes. It's a JavaScript rebuild of Tyliec's Python project HPD Stats (https://github.com/hnl-ai/hpdstats), which the footer and README credit. Comments that cite `scrape/main.py` or `scrape/utils/*.py` mean files in that project.
+Check Da Kine (https://checkdakine.com) tracks arrests by the Honolulu Police Department (HPD) using data HPD publishes, and on the Big Island by the Hawaiʻi Police Department, from its booking logs. It's a JavaScript rebuild of Tyliec's Python project HPD Stats (https://github.com/hnl-ai/hpdstats), which the footer and README credit. Comments that cite `scrape/main.py` or `scrape/utils/*.py` mean files in that project.
 
 The repo deploys as four Railway services:
 
@@ -65,8 +65,16 @@ Requests go `routes/` → `middleware/` (validators, the login rate limiter) →
 
 **MongoDB guard.** `config/database.js` turns on Mongoose's `sanitizeFilter`, which neutralizes `$` operators in query filters. Wrap every operator the app writes in a query in `mongoose.trusted()`, as listArrests.js and geocodePlaces.js do. A missing wrapper either silently matches nothing or throws a CastError, depending on the field. Aggregation pipelines aren't sanitized, so their `$match` stages need no wrapper.
 
-**Who sees names.** Arrestee and officer names appear only for logged-in users. Accounts are invite-only: there's no signup route, only `npm run create-user`.
-- `ArrestRecord.name` is `select: false`. `listArrests` adds `+name` only when `showNames` is true, and leaves out `offenses.officer` otherwise.
+**Islands.** Each island the site covers is one entry in `services/agencies.js`: its log and record models, the paths of its stats and arrests pages, its Cloudinary folder, `staleAfterHours`, whether HPD's news and X posts show (`hasNews`), and every word that differs between the islands' pages (`copy`).
+- Oʻahu keeps `/` and `/arrests`. The Big Island's pages are `/big-island` and `/big-island/arrests` (`routes/bigIslandRoutes.js`). Dispatches are Oʻahu's only.
+- `useAgency(key)` (`middleware/agency.js`) sets `req.agency` in front of the same validators and controllers. Controllers read `req.agency ?? agencies.oahu`, and `getDashboard`, `listArrests` and `getFilterOptions` take an `agency` that defaults to Oʻahu, so Oʻahu's routes need no wiring.
+- Views take their words from `agency.copy`, and their links and form actions from `agency.paths`. `partials/islandSwitch.ejs` puts the Oʻahu | Big Island links at the top of both pages. `arrestFeed.js` takes the feed's address from the search form's `action`.
+- The nav's Home and Arrests links follow the island on screen. `app.locals.agency` (server.js) is Oʻahu, so every page has an island, even an error page rendered before the middleware runs, and island pages pass their own.
+- `test/agencies.test.js` fails when an island is missing a word the others have, so a new island can't leave part of a page blank.
+- Adding an island takes: a log model and a record model on the shared schemas, an importer with its step in `jobs/scrapeArrestLogs.js`, an entry in agencies.js, a routes file mounted in server.js, any new race or ethnicity values in `ethnicityGroups.js`, and a credit in `partials/footer.ejs`.
+
+**Who sees names.** Arrestee and officer names, and Big Island hometowns, appear only for logged-in users. Accounts are invite-only: there's no signup route, only `npm run create-user`.
+- `name` and `residence` (a Big Island arrestee's town) are `select: false`. `listArrests` adds `+name +residence` only when `showNames` is true, and leaves out `offenses.officer` otherwise.
 - The officer dropdown is built only for logged-in users, and `resolveFilters` drops a guest's officer filter on the server, so guests can't tie an officer to arrests through the filters.
 - The search's text index (`arrestSearch`) covers charge, statute, location and report number, never names. The dashboard sends counts only.
 - Guests never get a link to an arrest log, because its PDF prints every name: `toCard` sets a card's `source` only for logged-in users. Our copies on Cloudinary are private, so nobody can download one by guessing its address: `archiveLink` (archivePdf.js) signs each link.
@@ -89,7 +97,7 @@ Anything new that reads arrests should follow the same rules. `test/arrestCards.
 - Every log prints its own totals ("Total OTNs Records Found", "Total Charge Records Found"). A mismatch, or no totals at all, means the layout changed: the log is marked `failed` with nothing saved, and retried on the next run. Odd rows the log itself prints (a charge above the first booking) are warnings saved on the log.
 - `toBookingFields` maps a booking onto the Oʻahu record shape. The arresting officer and release time are the booking's, copied onto each charge. A statute is split off the charge text ("291E-0061 OVUII" -> "HRS 291E-0061" and "OVUII"); a charge printed without one keeps its whole text and isn't flagged.
 - `dedupeKey` is `otn:<OTN>`, the statewide Offense Tracking Number printed with each booking, so the overlapping logs merge exactly.
-- Bookings go in their own collections, `BigIslandBookingLog` and `BigIslandArrest`, which reuse the Oʻahu schemas, so no Oʻahu page or count can include them. The schema's `ref: 'ArrestLog'` means populating a Big Island record's log needs `{ model: BigIslandBookingLog }`.
+- Bookings go in their own collections, `BigIslandBookingLog` and `BigIslandArrest`, which reuse the Oʻahu schemas, so no Oʻahu page or count can include them. The schema's `ref: 'ArrestLog'` means populating a Big Island record's log needs `{ model: BigIslandBookingLog }`, which `listArrests` passes as `agency.Log`.
 - `residence` (the arrestee's town; "Address of Arrestee" in the log) is `select: false` like `name`: in a small town, town, age and sex can point to one person. Logged-in users only.
 - Copies are archived privately under `checkDaKine/bigIslandBookings/` (`archivePdf`'s `folder` option). Stored file names swap the printed name's spaces for dashes.
 - When inspecting real logs, never print a person's name: mask every letter in the name, officer, released-by and hometown columns by position (x 180–345 and 480–670), not by matching "LAST, FIRST".
@@ -116,7 +124,7 @@ Anything new that reads arrests should follow the same rules. `test/arrestCards.
 - Use escaped `<%= %>` for data; `<%-` is only for `include`. Server data reaches client JS through escaped `data-*` attributes; `data-calls` carries the map's JSON.
 - Charts are server-rendered partials (`barList`, `columnChart`, `trendChart`, `officerUnits`), each with a `tableView` twin for screen readers. `dashboardCharts.js` only sets each bar's size, from `data-share` through the `--barShare` custom property.
 - The date filter is shared: `partials/dateFilter.ejs`, `validateDateRange`, and `services/dateRanges.js` (the range label and the one-click preset links).
-  - The home page shows it on the blue band, with all time as the default.
+  - Each island's stats page shows it on the blue band, with all time as the default. Its `filterAction` and preset links come from `agency.paths.stats`.
   - The Dispatches history passes `filterAction` and `onLight` for the light version. It also defaults to all time.
   - Ranges are whole Hawaii days, and can't start or end after today.
 - `services/chartRows.js` shapes the rows. `toTopRows` folds small rows into one "All others" bar, which suits a short tail (ethnicities). `toTopBars` suits a long tail (a week of dispatch call types): bars for the most common, the rest summed up in a line under the chart, and every row in the table, so no bar dwarfs the others.
@@ -124,7 +132,7 @@ Anything new that reads arrests should follow the same rules. `test/arrestCards.
 
 ## Tests
 
-`test/*.test.js` use `node:test` and `node:assert/strict` on pure functions, validators, and controllers given stand-in requests, so they need no database or network. `test/fixtures/` holds trimmed copies of HPD's dispatch page and news API response, and made-up X API responses and Big Island booking-log text pieces (real column positions, invented people). `test/bookingRegression.test.js` reads the real booking logs in the gitignored `samplePdfs/bigIsland/` and checks each against its printed totals; like the OCR regression test, it skips itself when they're absent. The validator tests run chains against a plain `{ query, body }` object, which doesn't reproduce Express 5's read-only `req.query`, so check cleaned values through `matchedData`, as they do.
+`test/*.test.js` use `node:test` and `node:assert/strict` on pure functions, validators, and controllers given stand-in requests, so they need no database or network. `test/nav.test.js` renders the nav partial with EJS. `test/fixtures/` holds trimmed copies of HPD's dispatch page and news API response, and made-up X API responses and Big Island booking-log text pieces (real column positions, invented people). `test/bookingRegression.test.js` reads the real booking logs in the gitignored `samplePdfs/bigIsland/` and checks each against its printed totals; like the OCR regression test, it skips itself when they're absent. The validator tests run chains against a plain `{ query, body }` object, which doesn't reproduce Express 5's read-only `req.query`, so check cleaned values through `matchedData`, as they do.
 
 ## Conventions
 
