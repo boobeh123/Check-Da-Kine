@@ -1,11 +1,15 @@
 const { validationResult, matchedData } = require('express-validator');
+const { agencies, islandList } = require('../services/agencies');
 const { listArrests } = require('../services/arrests/listArrests');
 const { toSearchWords } = require('../services/arrests/searchWords');
 const { getFilterOptions, resolveFilters } = require('../services/arrests/filterOptions');
 
 const sexLabels = { M: 'Male', F: 'Female' };
 
+// An island's Arrests page: Oʻahu's at /arrests, and the others at their own paths (req.agency,
+// set by middleware/agency.js)
 exports.getArrests = async (req, res) => {
+  const agency = req.agency ?? agencies.oahu;
   const result = validationResult(req);
   // Both cursor fields share one message, so show each message once
   const errors = [...new Set(result.array().map((error) => error.msg))];
@@ -19,9 +23,9 @@ exports.getArrests = async (req, res) => {
 
   // Names, and filtering by officer, are for logged-in users only
   const showNames = Boolean(req.user);
-  const options = await getFilterOptions({ showNames });
+  const options = await getFilterOptions({ showNames, agency });
   const filters = resolveFilters({ search, charge, sex, officer }, options, showNames);
-  const feed = await listArrests({ cursor, showNames, filters });
+  const feed = await listArrests({ cursor, showNames, filters, agency });
 
   // What the summary line lists, in the order the form shows them
   const activeFilters = [
@@ -36,9 +40,11 @@ exports.getArrests = async (req, res) => {
   if (showNames) res.set('Cache-Control', 'private, no-store');
 
   res.status(errors.length > 0 ? 400 : 200).render('arrestsView', {
-    title: 'Arrests',
-    description: "Every arrest in the Honolulu Police Department's published arrest logs, newest first, with each charge, statute, and court date. Search and filter by charge, sex, location, or report number.",
+    title: agency.copy.arrestsTitle,
+    description: agency.copy.arrestsDescription,
     scripts: ['/js/arrestFeed.js'],
+    agency,
+    islands: islandList,
     errors,
     showNames,
     search,

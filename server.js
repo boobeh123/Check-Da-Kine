@@ -102,6 +102,7 @@ app.use('/', require('./routes/indexRoutes'));
 app.use('/', require('./routes/authRoutes'));
 app.use('/arrests', require('./routes/arrestRoutes'));
 app.use('/dispatches', require('./routes/dispatchRoutes'));
+app.use('/big-island', require('./routes/bigIslandRoutes'));
 
 // 10. 404: after all routes
 app.use((req, res) => {

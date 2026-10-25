@@ -8,22 +8,25 @@
     <section class="pageBand">
       <div class="bandInner pageWidth">
         <%- include('partials/flashMessages') %>
-        <h1>Arrests</h1>
-        <p class="bandLead">Every arrest from HPD's published arrest logs, newest first. An arrest is not a conviction.</p>
+        <%- include('partials/islandSwitch', { page: 'arrests' }) %>
+        <%# The island's words come from services/agencies.js %>
+        <h1><%= agency.copy.arrestsTitle %></h1>
+        <p class="bandLead"><%= agency.copy.arrestsLead %></p>
         <% if (!showNames) { %>
-          <p class="bandNote">Arrestee and officer names are withheld.</p>
+          <p class="bandNote"><%= agency.copy.withheldNote %></p>
         <% } %>
       </div>
     </section>
 
     <div class="bandContent pageWidth">
-      <form class="card arrestSearch" method="get" action="/arrests" role="search">
+      <%# arrestFeed.js reads this form's action, so it fetches the right island's results %>
+      <form class="card arrestSearch" method="get" action="<%= agency.paths.arrests %>" role="search">
         <label for="arrestSearchInput">Search arrests</label>
         <div class="searchRow">
           <input type="search" id="arrestSearchInput" name="q" value="<%= search %>" maxlength="100" aria-describedby="arrestSearchHint">
           <button class="button" type="submit">Search</button>
         </div>
-        <p class="searchHint" id="arrestSearchHint">Whole words in a charge, statute, location, or report number, like ASSAULT, KALAKAUA, or 708-0833.</p>
+        <p class="searchHint" id="arrestSearchHint"><%= agency.copy.searchHint %></p>
 
         <%# The Search button applies these too. The officer list only exists for logged-in users. %>
         <div class="filterRow<%= options.officers ? ' filterRowWide' : '' %>">
@@ -70,7 +73,7 @@
         <% if (anyFilter) { %>
           <p class="searchSummary">
             <span class="summaryText"><%= total.toLocaleString('en-US') %> <%= total === 1 ? 'arrest matches' : 'arrests match' %>: <%= activeFilters.join(' · ') %>.</span>
-            <a href="/arrests">Clear all</a>
+            <a href="<%= agency.paths.arrests %>">Clear all</a>
           </p>
         <% } %>
 
@@ -97,7 +100,7 @@
         <% } else if (cards.length === 0) { %>
           <section class="card emptyState">
             <h2>No arrests yet</h2>
-            <p>No arrest logs have been imported yet.</p>
+            <p><%= agency.copy.noLogsYet %></p>
           </section>
         <% } else { %>
           <div class="arrestFeed">

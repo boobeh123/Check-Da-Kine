@@ -9,17 +9,17 @@
     <section class="pageBand">
       <div class="bandInner pageWidth">
         <%- include('partials/flashMessages') %>
-        <h1>Honolulu Police Department arrest statistics</h1>
-        <p class="bandLead">Check Da Kine turns the Honolulu Police Department's published arrest logs into statistics anyone can explore.</p>
+        <%- include('partials/islandSwitch', { page: 'stats' }) %>
+        <%# The island's words come from services/agencies.js %>
+        <h1><%= agency.copy.statsTitle %></h1>
+        <p class="bandLead"><%= agency.copy.statsLead %></p>
         <% if (lastUpdated) { %>
           <p class="bandNote">Last updated <%= lastUpdated %>. All dates and times are Hawaii time.</p>
         <% } %>
         <% if (stale) { %>
-          <%- include('partials/staleNotice', {
-            message: `No new arrest log since ${lastUpdated} (${stale.ago}). Either HPD hasn't published one, or our scraper has stopped.`,
-          }) %>
+          <%- include('partials/staleNotice', { message: agency.copy.staleMessage(lastUpdated, stale.ago) }) %>
         <% } %>
-        <%- include('partials/dateFilter') %>
+        <%- include('partials/dateFilter', { filterAction: agency.paths.stats }) %>
       </div>
     </section>
     
@@ -31,7 +31,7 @@
           <% if (span) { %>
             <p>Arrests on record run from <%= span.label %>. Try a range that overlaps those dates.</p>
           <% } else { %>
-            <p>No arrest logs have been imported yet.</p>
+            <p><%= agency.copy.noLogsYet %></p>
           <% } %>
         </section>
       <% } else { %>
@@ -67,7 +67,7 @@
             </div>
           </dl>
           <% if (totals.flagged > 0) { %>
-            <p class="dataNote"><%= totals.flagged.toLocaleString('en-US') %> of these arrests have a field that OCR couldn't read cleanly. They're still counted wherever the field was readable.</p>
+            <p class="dataNote"><%= totals.flagged.toLocaleString('en-US') %> <%= agency.copy.flaggedNote %></p>
           <% } %>
         </section>
       <% } %>
@@ -98,13 +98,14 @@
           }) %>
         </section>
 
+        <% const ethnicityWord = agency.copy.ethnicityWord; %>
         <section class="card chartCard">
-          <h2>Arrests by ethnicity</h2>
-          <p class="chartCaption">Ethnicities as HPD prints them. An arrest listing more than one ethnicity counts toward each.</p>
+          <h2>Arrests by <%= ethnicityWord %></h2>
+          <p class="chartCaption"><%= agency.copy.ethnicityCaption %></p>
           <%- include('partials/barList', { rows: ethnicities }) %>
           <%- include('partials/tableView', {
-            caption: 'Arrests by ethnicity',
-            columns: ['Ethnicity', 'Arrests'],
+            caption: `Arrests by ${ethnicityWord}`,
+            columns: [ethnicityWord[0].toUpperCase() + ethnicityWord.slice(1), 'Arrests'],
             rows: ethnicities.map((row) => [row.label, row.count.toLocaleString('en-US')]),
           }) %>
         </section>
@@ -112,10 +113,10 @@
         <section class="card chartCard">
           <h2>Officers by the group they arrested most</h2>
           <p class="chartCaption">
-            Each square is one of the <%= officerCount.toLocaleString('en-US') %> officers who made an arrest in this range, colored by the ethnic group they arrested most. Officers are anonymous in this chart.
+            Each square is one of the <%= officerCount.toLocaleString('en-US') %> officers who made an arrest in this range, colored by the <%= agency.copy.officerGroupWord %> they arrested most. Officers are anonymous in this chart.
           </p>
           <%- include('partials/officerUnits') %>
-          <p class="chartCaveat">Read this with care. An officer's most-arrested group mostly reflects where they patrol, and an officer with one or two arrests gets a color from very little data. Officer names come from OCR, so a misread name can split one officer into two.</p>
+          <p class="chartCaveat"><%= agency.copy.officerCaveat %></p>
           <%- include('partials/tableView', {
             caption: 'Officers by the group they arrested most',
             columns: ['Group arrested most', 'Officers'],
@@ -126,7 +127,7 @@
 
       <section class="aboutData">
         <h2>About this data</h2>
-        <p>HPD publishes a new arrest log as a PDF about every six hours. We read each one, pull out every arrest, and keep a single de-duplicated record of each, so the numbers can be checked against the Attorney General's <a href="https://ag.hawaii.gov/cpja/rs/cih/">annual crime reports</a>.</p>
+        <p><%= agency.copy.aboutLead %> so the numbers can be checked against the Attorney General's <a href="https://ag.hawaii.gov/cpja/rs/cih/">annual crime reports</a>.</p>
       </section>
     </div>
   </main>

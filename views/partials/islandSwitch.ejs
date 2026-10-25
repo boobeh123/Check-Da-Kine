@@ -1,0 +1,11 @@
+<%# Moves between the islands' versions of this page, styled like the date filter's one-click
+    ranges. page: 'stats' or 'arrests'; agency and islands come from the controller. %>
+<nav class="islandSwitch" aria-label="Island">
+  <ul class="presetList">
+    <% islands.forEach((island) => { %>
+      <li>
+        <a class="presetLink" href="<%= island.paths[page] %>"<% if (island.key === agency.key) { %> aria-current="page"<% } %>><%= island.name %></a>
+      </li>
+    <% }) %>
+  </ul>
+</nav>

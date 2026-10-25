@@ -1,4 +1,5 @@
-<%# One arrest. tabindex="-1" lets arrestFeed.js move focus here after loading more. %>
+<%# One arrest. tabindex="-1" lets arrestFeed.js move focus here after loading more. The
+    island's words come from agency (services/agencies.js). %>
 <article class="card arrestCard" tabindex="-1">
   <header class="arrestHeader">
     <div class="arrestHeading">
@@ -8,6 +9,10 @@
       <% } %>
     </div>
     <p class="arrestName<% if (!card.nameShown) { %> arrestNameMissing<% } %>"><%= card.name %></p>
+    <%# Only set for logged-in users (listArrests.js) %>
+    <% if (card.hometown) { %>
+      <p class="arrestHometown">Hometown: <%= card.hometown %></p>
+    <% } %>
     <% if (card.chips.length > 0) { %>
       <ul class="chipList">
         <% card.chips.forEach((chip) => { %>
@@ -43,9 +48,9 @@
 
   <footer class="arrestFooter">
     <% if (card.source) { %>
-      <p>From <a href="<%= card.source.url %>">HPD's arrest log of <%= card.source.label %></a>.</p>
+      <p>From <a href="<%= card.source.url %>"><%= agency.copy.sourceName %> of <%= card.source.label %></a>.</p>
     <% } %>
-    <span class="ocrNote">Read from HPD's PDF by OCR, so this text may not be completely accurate.</span>
+    <span class="ocrNote"><%= agency.copy.readNote %></span>
     <% if (card.warnings.length > 0) { %>
       <details class="arrestWarnings">
         <summary>Details flagged for review</summary>
