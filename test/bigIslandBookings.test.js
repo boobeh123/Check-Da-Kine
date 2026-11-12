@@ -118,6 +118,24 @@ describe('parseBookingLog', () => {
     assert.deepEqual(result.warnings, ['the log lists 4 bookings but prints 3, each with its OTN line and charges, so all 3 were read']);
   });
 
+  it('reads a charge printed without a report number, by its bail', () => {
+    // The Nov 7 and Nov 8 2026 logs printed a criminal contempt of court charge with no report
+    // number, so the logs came up one charge short and failed every run
+    const unnumbered = items.filter((item) => !(item.s === '26-089391' && item.page === 2));
+    const result = parseBookingLog(unnumbered);
+    assert.deepEqual(result.errors, []);
+    assert.deepEqual(result.warnings, []);
+    assert.deepEqual(result.bookings[2].charges[0], {
+      reportNumber: undefined,
+      charge: '431:10C-104 NO MOTOR VEHICLE INSURANCE POLICY',
+      bailSet: '$500',
+      bailPosted: '$0',
+      release: 'Released - Own Recog',
+      courtCode: 'HD6',
+      courtDate: '11/19/2026',
+    });
+  });
+
   it('calls it an error when there are no totals at all, which means the layout changed', () => {
     const { errors: noTotals } = parseBookingLog(items.filter((item) => !/^Total/.test(item.s)));
     assert.deepEqual(noTotals, ["the log's booking count wasn't found; its layout may have changed"]);
