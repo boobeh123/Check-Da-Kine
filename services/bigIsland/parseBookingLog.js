@@ -7,6 +7,7 @@ const {
   sameRowPoints,
   dateTimePattern,
   reportNumberPattern,
+  dollarPattern,
   otnPattern,
   dayTotalPattern,
   grandTotalPatterns,
@@ -76,6 +77,13 @@ const parseBookingLog = (items) => {
     if (otnItem) otnLines += 1;
     const startsBooking = row.items.some((item) => toField(bookingColumns, item.x) === 'arrestedOn' && dateTimePattern.test(item.s));
     const startsCharge = row.items.some((item) => toField(chargeColumns, item.x) === 'reportNumber' && reportNumberPattern.test(item.s));
+    // Some charges print no report number: the Nov 7 and Nov 8 2026 logs list a criminal contempt
+    // of court charge with only its description and bail. Its bail is what sets it apart from a
+    // line of wrapped text, which never has one.
+    const startsUnnumberedCharge =
+      !startsCharge &&
+      row.items.some((item) => toField(chargeColumns, item.x) === 'charge') &&
+      row.items.some((item) => toField(chargeColumns, item.x) === 'bailSet' && dollarPattern.test(item.s));
 
     if (startsBooking) {
       const { arrestedOn, releasedOn, name, gender, age, race, hometown, officer } = toFields(row, bookingColumns);
@@ -99,11 +107,11 @@ const parseBookingLog = (items) => {
       if (booking) booking.otn = otnPattern.exec(otnItem.s)[1];
       else warnings.push(`an OTN line (${otnItem.s}) came before any booking`);
       charge = null;
-    } else if (startsCharge) {
+    } else if (startsCharge || startsUnnumberedCharge) {
       const { reportNumber, charge: text, bailSet, bailPosted, release, courtCode, courtDate } = toFields(row, chargeColumns);
       charge = { reportNumber, charge: text, bailSet, bailPosted, release, courtCode, courtDate };
       if (booking) booking.charges.push(charge);
-      else warnings.push(`charge ${reportNumber} came before any booking, so it was left out`);
+      else warnings.push(`charge ${reportNumber ?? `"${text}"`} came before any booking, so it was left out`);
     } else if (row.items.some((item) => dayTotalPattern.test(item.s))) {
       totals.byDay.push(totalIn(row, dayTotalPattern));
       charge = null;

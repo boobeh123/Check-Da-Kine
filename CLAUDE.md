@@ -15,7 +15,7 @@ The repo deploys as four Railway services:
 | Dispatch calls: save HPD's open calls and place them on the map | `npm run scrape-dispatches` | every 10 minutes |
 | News: HPD's latest releases from its WordPress API, and its posts on X | `npm run scrape-news` | hourly |
 
-There's no railway.json or nixpacks.toml: start commands, schedules and variables are set in Railway's dashboard. Each job prints a summary and exits. A non-zero exit code marks the run as failed in Railway's cron history, so new jobs should do the same.
+There's no railway.json or nixpacks.toml: start commands, schedules and variables are set in Railway's dashboard. Each job prints a summary and exits. A non-zero exit code marks the run as failed in Railway's cron history, so new jobs should do the same. `npm run scrape` exits non-zero only for a new failure: a log that fails again with the same error as last run is a warning, so one bad log fails one run instead of every hourly run while it stays listed.
 
 README.md explains the pipeline in detail for people reading the GitHub page. Update it when behavior it describes changes.
 
@@ -83,7 +83,7 @@ Requests go `routes/` → `middleware/` (validators, the login rate limiter) →
 Anything new that reads arrests should follow the same rules. `test/arrestCards.test.js` checks what a guest's card contains.
 
 **Arrest logs** (`services/arrestLog/`). HPD posts a log about every 6 hours, each covering 12 hours, so most arrests appear in two logs.
-- `importArrestLogs` takes each listed log that isn't `parsed` yet, oldest first: download into memory, archive a private copy to Cloudinary (`archivePdf`), OCR (`parseArrestLog`), then save each arrest (`saveRecord`). A failed log is marked `failed` and retried on the next run, while HPD still lists it (about two weeks).
+- `importArrestLogs` takes each listed log that isn't `parsed` yet, oldest first: download into memory, archive a private copy to Cloudinary (`archivePdf`), OCR (`parseArrestLog`), then save each arrest (`saveRecord`). A failed log is marked `failed` and retried on the next run, while HPD still lists it (about two weeks). A retry that fails with the same error is counted as still failing and doesn't fail the run.
 - A copy's `pdfUrl` says how Cloudinary delivers it: `/raw/upload/` is public and `/raw/authenticated/` is private. Copies uploaded before the archive went private (Oct 2026) are moved by `makeArchivePrivate`, which `npm run scrape` runs after every import. Each moved copy has to download through a signed link before its new URL is saved, or it's moved back.
 - `parseArrestLog`: pdf.js renders each page at 2x onto an @napi-rs/canvas. It's an ES module, so it's loaded with dynamic `import()`. The pages are cropped and stacked into one tall strip, and a scan down one pixel column finds where each arrest and each charge starts. Then sharp enlarges each field box and a single Tesseract worker reads them one at a time.
 - `layoutConstants.js` holds pixel positions measured on HPD's PDFs at 2x (1584 px wide). If HPD changes its layout, these are what move. Check any change with `npm run parse` on new PDFs and the OCR regression test.
@@ -93,8 +93,9 @@ Anything new that reads arrests should follow the same rules. `test/arrestCards.
 
 **Big Island booking logs** (`services/bigIsland/`). The Hawaiʻi Police Department posts one "Media Booking Log" PDF each morning at https://www.hawaiipolice.gov/news-and-media/booking-logs/, covering about 48 hours, and lists only about 8 days of them. `npm run scrape` imports them after Oʻahu's logs, each island on its own; `--island` picks one.
 - The PDFs are Crystal Reports output with a real text layer, so `services/pdfText.js` reads positioned text pieces with pdf.js. No OCR.
-- `bookingLayout.js` holds the column positions. `parseBookingLog` groups the pieces into rows (across page breaks), starts a booking at a time in the Arrested On column and a charge at a report number, joins wrapped charge text, and drops "Released By", a name nothing uses.
+- `bookingLayout.js` holds the column positions. `parseBookingLog` groups the pieces into rows (across page breaks), starts a booking at a time in the Arrested On column and a charge at a report number (or, for a charge printed without one, at charge text with a bail amount), joins wrapped charge text, and drops "Released By", a name nothing uses.
 - Every log prints its own totals ("Total OTNs Records Found", "Total Charge Records Found"). A charge mismatch, a booking whose row went unread, or no totals at all means the layout changed: the log is marked `failed` with nothing saved, and retried on the next run.
+  - Some charges print no report number. The Nov 7 and Nov 8 2026 logs listed a criminal contempt of court charge with only its text and bail, so both came up one charge short until the parser learned to start a charge at a bail amount. Wrapped charge text never has a bail amount.
   - A booking counts as read when there are as many bookings as "Charges for OTN" lines, one per booking.
   - The department's booking total can be wrong. On Oct 25 2026 it listed 39 but printed 38, every one with its OTN line and charges. When every OTN line has its booking and the charges add up, a booking-total mismatch is a warning, not a failure.
 - Odd rows the log itself prints (a charge above the first booking) and a miscounted booking total are warnings saved on the log.

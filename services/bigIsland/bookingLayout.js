@@ -35,6 +35,7 @@ const sameRowPoints = 2;
 
 const dateTimePattern = /^(\d{2})\/(\d{2})\/(\d{2}) (\d{2}):(\d{2})$/; // MM/DD/YY HH:MM
 const reportNumberPattern = /^\d{2}-\d{6}$/;
+const dollarPattern = /^\$[\d,]+$/; // "$1,000", as bail is printed
 const otnPattern = /^Charges for OTN:\s*(\S+)$/;
 const dayTotalPattern = /^Total OTNs on this date:/;
 const grandTotalPatterns = {
@@ -48,6 +49,7 @@ module.exports = {
   sameRowPoints,
   dateTimePattern,
   reportNumberPattern,
+  dollarPattern,
   otnPattern,
   dayTotalPattern,
   grandTotalPatterns,

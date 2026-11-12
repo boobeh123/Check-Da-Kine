@@ -60,12 +60,16 @@ const printDatabaseTotals = async (Log, Record, prefix) => {
   console.log(`${prefix}Database now holds ${parsedLogs} parsed logs (${failedLogs} failed) and ${records} arrests`);
 };
 
-// Each returns whether every log imported
+// A log that failed earlier and fails again the same way only gets a warning, so one bad log
+// fails one run instead of every hourly run while it stays listed
+const stillFailingNote = (totals) => (totals.stillFailing > 0 ? `, ${totals.stillFailing} still failing from earlier runs` : '');
+
+// Each returns whether every log imported, not counting logs that keep failing the same way
 const importers = {
   oahu: async (options) => {
     const totals = await importArrestLogs(options);
     console.log(
-      `Done: ${totals.imported} logs imported, ${totals.failed} failed. Arrests: ${totals.created} new, ` +
+      `Done: ${totals.imported} logs imported, ${totals.failed} failed${stillFailingNote(totals)}. Arrests: ${totals.created} new, ` +
         `${totals.updated} updated, ${totals.kept} kept newer, ${totals.skipped} skipped`
     );
     await printDatabaseTotals(ArrestLog, ArrestRecord, '');
@@ -82,7 +86,7 @@ const importers = {
   'big-island': async (options) => {
     const totals = await importBookingLogs(options);
     console.log(
-      `Big Island: ${totals.imported} logs imported, ${totals.failed} failed. Arrests: ${totals.created} new, ` +
+      `Big Island: ${totals.imported} logs imported, ${totals.failed} failed${stillFailingNote(totals)}. Arrests: ${totals.created} new, ` +
         `${totals.updated} updated, ${totals.kept} kept newer, ${totals.skipped} skipped`
     );
     await printDatabaseTotals(BigIslandBookingLog, BigIslandArrest, 'Big Island: ');
