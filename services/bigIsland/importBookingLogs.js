@@ -37,10 +37,12 @@ const saveBookings = async (bookings, log) => {
 
 // A log that doesn't add up (a booking it prints went unread, or its charges don't match its
 // totals) is marked 'failed', with nothing saved, and retried on the next run while the
-// department still lists it (about 8 days)
+// department still lists it (about 8 days). The error it throws carries `repeated: true` when the
+// last attempt failed with the same message, so one bad log fails the run once, not every hour.
 const importOneLog = async (listedLog, { upload }) => {
   const log = (await BigIslandBookingLog.findOne({ fileName: listedLog.fileName })) ?? new BigIslandBookingLog(listedLog);
   if (log.isNew) await log.save(); // Records point at the log, so it needs an _id first
+  const previousError = log.status === 'failed' ? log.errorMessage : undefined;
 
   try {
     const pdf = await downloadPdf(log.sourceUrl);
@@ -62,8 +64,10 @@ const importOneLog = async (listedLog, { upload }) => {
     await log.save();
     return { outcomes, warningCount: warnings.length };
   } catch (err) {
-    log.set({ status: 'failed', errorMessage: err.message.slice(0, errorMessageLength) });
+    const errorMessage = err.message.slice(0, errorMessageLength);
+    log.set({ status: 'failed', errorMessage });
     await log.save();
+    err.repeated = errorMessage === previousError;
     throw err;
   }
 };
@@ -79,7 +83,9 @@ const importBookingLogs = async ({ limit, upload }) => {
 
   console.log(`Big Island: the department lists ${listedLogs.length} booking logs; ${logsToImport.length} to import`);
 
-  const totals = { imported: 0, failed: 0, created: 0, updated: 0, kept: 0, skipped: 0 };
+  // failed: logs that failed for the first time, or with a new error. stillFailing: logs that
+  // failed again exactly as before, which don't fail the run
+  const totals = { imported: 0, failed: 0, stillFailing: 0, created: 0, updated: 0, kept: 0, skipped: 0 };
 
   for (const listedLog of logsToImport) {
     try {
@@ -94,8 +100,13 @@ const importBookingLogs = async ({ limit, upload }) => {
         totals[outcome] += count;
       });
     } catch (err) {
-      totals.failed += 1;
-      console.error(`Big Island ${listedLog.fileName}: failed - ${err.message}`);
+      if (err.repeated) {
+        totals.stillFailing += 1;
+        console.warn(`Big Island ${listedLog.fileName}: still failing, same error as last run - ${err.message}`);
+      } else {
+        totals.failed += 1;
+        console.error(`Big Island ${listedLog.fileName}: failed - ${err.message}`);
+      }
     }
   }
 
